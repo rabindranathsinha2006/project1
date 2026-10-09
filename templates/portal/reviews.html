@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Reviews | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Admin Nav Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-chat-quote-fill text-warning me-2"></i> Product Reviews Moderation</h2>
+            <p class="text-muted small mb-0">Approve, hide, or moderate customer ratings and comments</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'portal:dashboard' %}" class="btn btn-outline-secondary btn-sm">← Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Reviews Table -->
+    <div class="card border shadow-sm rounded-4 overflow-hidden mb-4" style="background: var(--bg-card);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: var(--bg-subtle);">
+                    <tr class="small text-muted text-uppercase">
+                        <th class="p-3">Product</th>
+                        <th class="p-3">User</th>
+                        <th class="p-3">Rating</th>
+                        <th class="p-3">Headline & Review</th>
+                        <th class="p-3">Date</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reviews %}
+                    <tr>
+                        <td class="p-3 small fw-bold">
+                            <a href="{% url 'products:detail' r.product.slug %}" target="_blank">{{ r.product.name }}</a>
+                        </td>
+                        <td class="p-3 small">{{ r.user.get_full_name|default:r.user.username }}</td>
+                        <td class="p-3 text-warning fw-bold"><i class="bi bi-star-fill"></i> {{ r.rating }}</td>
+                        <td class="p-3 small" style="max-width: 300px;">
+                            <strong>{{ r.headline }}</strong>
+                            <p class="text-muted mb-0 text-truncate">{{ r.comment }}</p>
+                        </td>
+                        <td class="p-3 small text-muted">{{ r.created_at|date:"d M Y" }}</td>
+                        <td class="p-3">
+                            {% if r.is_approved %}
+                            <span class="badge bg-success">Visible</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Hidden</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-3 text-end">
+                            <form action="{% url 'portal:review_toggle' r.id %}" method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm {% if r.is_approved %}btn-outline-warning{% else %}btn-outline-success{% endif %}">
+                                    {% if r.is_approved %}Hide{% else %}Approve{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">No reviews submitted yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

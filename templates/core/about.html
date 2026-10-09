@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-5">
+    
+    <!-- Hero Banner -->
+    <div class="text-center max-w-750 mx-auto mb-5">
+        <span class="badge bg-warning text-dark px-3 py-2 fw-bold mb-3"><i class="bi bi-award-fill"></i> Our Story & Vision</span>
+        <h1 class="display-4 fw-black mb-3">Redefining Digital Commerce with Integrity & Innovation</h1>
+        <p class="fs-5 text-secondary">
+            <strong>THE ULTIMATE SHOPPING</strong> was created with a clear mission: to build a seamless, secure, and delightfully intelligent shopping experience featuring genuine premium products and customer-first fulfillment.
+        </p>
+    </div>
+
+    <!-- 3 Pillars -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border shadow-sm rounded-4 p-4 h-100 text-center" style="background: var(--bg-card);">
+                <div class="logo-icon-box mx-auto mb-3" style="width: 55px; height: 55px; font-size: 1.6rem;">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <h4 class="fw-bold mb-2">100% Genuine Brands</h4>
+                <p class="text-muted small mb-0">Every product in our catalog comes with verified manufacturer warranties and direct sourcing from authorized distributors.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border shadow-sm rounded-4 p-4 h-100 text-center" style="background: var(--bg-card);">
+                <div class="logo-icon-box mx-auto mb-3" style="width: 55px; height: 55px; font-size: 1.6rem; background: linear-gradient(135deg, #06b6d4, #0284c7);">
+                    <i class="bi bi-cpu-fill"></i>
+                </div>
+                <h4 class="fw-bold mb-2">AI-Driven Insights</h4>
+                <p class="text-muted small mb-0">Our real-time AI Shopping Assistant analyzes user budgets, specifications, and real database prices to recommend the perfect fit.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border shadow-sm rounded-4 p-4 h-100 text-center" style="background: var(--bg-card);">
+                <div class="logo-icon-box mx-auto mb-3" style="width: 55px; height: 55px; font-size: 1.6rem; background: linear-gradient(135deg, #10b981, #059669);">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Transparent Logistics</h4>
+                <p class="text-muted small mb-0">Track your parcel through every stage from our fulfillment centers to your doorstep with live status updates and PIN estimators.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Stats -->
+    <div class="card border-0 shadow-lg rounded-4 p-5 text-white mb-5 text-center" style="background: linear-gradient(135deg, #0b132b 0%, #1e293b 100%);">
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="display-4 fw-black text-orange">50,000+</div>
+                <div class="text-secondary small mt-1">Happy Customers</div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="display-4 fw-black text-warning">99.8%</div>
+                <div class="text-secondary small mt-1">On-Time Deliveries</div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="display-4 fw-black text-info">15,000+</div>
+                <div class="text-secondary small mt-1">Verified Reviews</div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="display-4 fw-black text-success">24/7</div>
+                <div class="text-secondary small mt-1">Customer Support</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

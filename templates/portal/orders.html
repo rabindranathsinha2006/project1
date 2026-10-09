@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Orders | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Admin Nav Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-box-seam text-primary me-2"></i> Orders Processing Center</h2>
+            <p class="text-muted small mb-0">Manage customer order statuses, dispatches, and cancellations</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'portal:dashboard' %}" class="btn btn-outline-secondary btn-sm">← Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Filter Toolbar -->
+    <div class="card border shadow-sm rounded-4 p-3 mb-4" style="background: var(--bg-card);">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-7">
+                <input type="text" name="q" class="form-control form-control-sm" placeholder="Search by order #, recipient name, or email..." value="{{ q }}">
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Statuses</option>
+                    {% for code, label in status_choices %}
+                    <option value="{{ code }}" {% if current_status == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-dark w-100 fw-bold">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card border shadow-sm rounded-4 overflow-hidden mb-4" style="background: var(--bg-card);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: var(--bg-subtle);">
+                    <tr class="small text-muted text-uppercase">
+                        <th class="p-3">Order Number</th>
+                        <th class="p-3">Customer</th>
+                        <th class="p-3">Date</th>
+                        <th class="p-3">Payment</th>
+                        <th class="p-3">Amount</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ord in orders %}
+                    <tr>
+                        <td class="p-3 fw-bold"><a href="{% url 'portal:order_detail' ord.order_number %}">#{{ ord.order_number }}</a></td>
+                        <td class="p-3 small">
+                            <strong>{{ ord.shipping_full_name }}</strong>
+                            <div class="text-muted">{{ ord.user.email }}</div>
+                        </td>
+                        <td class="p-3 small text-muted">{{ ord.created_at|date:"d M Y, h:i A" }}</td>
+                        <td class="p-3 small">
+                            <span class="badge bg-secondary">{{ ord.get_payment_method_display }}</span>
+                        </td>
+                        <td class="p-3 fw-bold text-orange">₹{{ ord.total_amount }}</td>
+                        <td class="p-3">
+                            <span class="badge {% if ord.status == 'delivered' %}bg-success{% elif ord.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                {{ ord.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="p-3 text-end">
+                            <a href="{% url 'portal:order_detail' ord.order_number %}" class="btn btn-sm btn-outline-dark fw-bold">
+                                Update Status
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">No orders found matching criteria.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

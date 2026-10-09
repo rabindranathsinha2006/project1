@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Compare Products | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'products:list' %}">Products</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Compare</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-intersect text-orange me-2"></i> Side-by-Side Product Comparison</h2>
+            <p class="text-muted small mb-0">Compare up to 4 products across technical specs, ratings, and price points.</p>
+        </div>
+        {% if products %}
+        <a href="{% url 'products:clear_compare' %}" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-x-circle me-1"></i> Clear All
+        </a>
+        {% endif %}
+    </div>
+
+    {% if products %}
+    <div class="card border shadow-sm rounded-4 overflow-hidden mb-5" style="background: var(--bg-card);">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0 align-middle">
+                <tbody>
+                    <!-- Product Header Row -->
+                    <tr>
+                        <th class="w-25 text-muted" style="background: var(--bg-subtle);">Product Overview</th>
+                        {% for p in products %}
+                        <td class="text-center p-3" style="min-width: 240px; width: {% widthratio 75 products.count 1 %}%;">
+                            <div class="position-relative mb-2">
+                                <a href="{% url 'products:toggle_compare' p.id %}" class="btn btn-sm btn-light border position-absolute top-0 end-0 rounded-circle text-danger p-1" title="Remove">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                                <img src="{{ p.primary_image }}" alt="{{ p.name }}" class="img-fluid rounded-3" style="max-height: 140px; object-fit: contain;">
+                            </div>
+                            <div class="fw-bold small mb-1">{{ p.brand }}</div>
+                            <h6 class="fw-bold mb-2"><a href="{% url 'products:detail' p.slug %}">{{ p.name }}</a></h6>
+                            <div class="text-orange fw-bold fs-5 mb-2">₹{{ p.effective_price }}</div>
+                            {% if p.is_in_stock %}
+                            <button class="btn btn-sm btn-dark w-100 ajax-add-cart" data-url="{% url 'cart:add' p.id %}" style="background: var(--navy-primary);">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
+                            </button>
+                            {% else %}
+                            <span class="badge bg-secondary w-100 py-2">Out of Stock</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Rating Row -->
+                    <tr>
+                        <th class="text-muted" style="background: var(--bg-subtle);">Customer Rating</th>
+                        {% for p in products %}
+                        <td class="text-center">
+                            <span class="text-warning fw-bold"><i class="bi bi-star-fill"></i> {{ p.average_rating }}</span>
+                            <span class="text-muted small">({{ p.review_count }} reviews)</span>
+                        </td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Stock Availability -->
+                    <tr>
+                        <th class="text-muted" style="background: var(--bg-subtle);">Availability</th>
+                        {% for p in products %}
+                        <td class="text-center">
+                            {% if p.is_in_stock %}
+                            <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle"></i> In Stock ({{ p.stock }})</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger"><i class="bi bi-x-circle"></i> Out of Stock</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Category & Brand -->
+                    <tr>
+                        <th class="text-muted" style="background: var(--bg-subtle);">Category</th>
+                        {% for p in products %}
+                        <td class="text-center">{{ p.category.name }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Specification Rows -->
+                    {% for key in spec_keys %}
+                    <tr>
+                        <th class="text-muted" style="background: var(--bg-subtle);">{{ key }}</th>
+                        {% for p in products %}
+                        <td class="text-center">
+                            {{ p.specifications|default_if_none:''|slice:key|default:"—" }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5 p-4 rounded-4 border" style="background: var(--bg-card);">
+        <i class="bi bi-intersect text-muted display-1 mb-3"></i>
+        <h4 class="fw-bold">No Products in Comparison</h4>
+        <p class="text-muted">Click the compare button <i class="bi bi-arrow-left-right"></i> on any product card or details page to compare specs side by side.</p>
+        <a href="{% url 'products:list' %}" class="btn text-white fw-bold px-4 py-2 mt-2" style="background: var(--orange-primary);">
+            Browse Products to Compare
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inventory Management | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Admin Nav Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-box-arrow-in-down text-danger me-2"></i> Inventory & Stock Alerts</h2>
+            <p class="text-muted small mb-0">Automated alerts for depleted stock and threshold monitoring</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'portal:dashboard' %}" class="btn btn-outline-secondary btn-sm">← Dashboard</a>
+            {% if low_only %}
+            <a href="{% url 'portal:inventory' %}" class="btn btn-dark btn-sm">Show All Products</a>
+            {% else %}
+            <a href="{% url 'portal:inventory' %}?low_only=1" class="btn btn-danger btn-sm fw-bold">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> View Low Stock Warnings Only
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="card border shadow-sm rounded-4 overflow-hidden mb-4" style="background: var(--bg-card);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: var(--bg-subtle);">
+                    <tr class="small text-muted text-uppercase">
+                        <th class="p-3">Product Name</th>
+                        <th class="p-3">Category</th>
+                        <th class="p-3">Current Stock</th>
+                        <th class="p-3">Alert Threshold</th>
+                        <th class="p-3">Stock Condition</th>
+                        <th class="p-3 text-end">Quick Restock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                    <tr class="{% if p.stock <= p.stock_threshold %}table-warning{% endif %}">
+                        <td class="p-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="{{ p.primary_image }}" alt="{{ p.name }}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <div class="fw-bold small">{{ p.name }}</div>
+                                    <small class="text-muted">SKU: {{ p.sku }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-3 small">{{ p.category.name }}</td>
+                        <td class="p-3 fw-bold fs-6">{{ p.stock }} units</td>
+                        <td class="p-3 small">{{ p.stock_threshold }} units</td>
+                        <td class="p-3">
+                            {% if p.stock == 0 %}
+                            <span class="badge bg-danger"><i class="bi bi-x-circle-fill me-1"></i> Out of Stock</span>
+                            {% elif p.stock <= p.stock_threshold %}
+                            <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle-fill me-1"></i> Low Stock Alert</span>
+                            {% else %}
+                            <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle-fill me-1"></i> Healthy Stock</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-3 text-end">
+                            <form method="POST" class="d-inline-flex gap-1 align-items-center">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ p.id }}">
+                                <input type="number" name="stock" class="form-control form-control-sm text-center" style="width: 75px;" value="{{ p.stock }}" min="0">
+                                <input type="number" name="stock_threshold" class="form-control form-control-sm text-center" style="width: 60px;" value="{{ p.stock_threshold }}" min="1" title="Threshold">
+                                <button type="submit" class="btn btn-sm btn-dark" style="background: var(--navy-primary);" title="Save">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">No low stock items found! All products are well stocked.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

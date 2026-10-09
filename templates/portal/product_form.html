@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if product %}Edit {{ product.name }}{% else %}Add Product{% endif %} | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'portal:dashboard' %}">Admin</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'portal:products' %}">Products</a></li>
+            <li class="breadcrumb-item active">{% if product %}Edit Product{% else %}New Product{% endif %}</li>
+        </ol>
+    </nav>
+
+    <div class="card border shadow-sm rounded-4 p-4 p-md-5 mx-auto" style="max-width: 950px; background: var(--bg-card);">
+        <h3 class="fw-bold mb-4">
+            <i class="bi bi-box-seam text-orange me-2"></i> {% if product %}Edit Product: {{ product.name }}{% else %}Add New Catalog Product{% endif %}
+        </h3>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="row g-3 mb-3">
+                <div class="col-md-8">
+                    <label class="form-label small fw-bold">Product Name *</label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Sony WH-1000XM5 Wireless Headphones" value="{{ product.name|default:'' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Category *</label>
+                    <select name="category" class="form-select" required>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if product.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Brand Name *</label>
+                    <input type="text" name="brand" class="form-control" placeholder="e.g. Sony, Apple, Nike" value="{{ product.brand|default:'Generic' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">SKU Code *</label>
+                    <input type="text" name="sku" class="form-control font-monospace" placeholder="e.g. PROD-SNY-001" value="{{ product.sku|default:'' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Image URL *</label>
+                    <input type="url" name="primary_image" class="form-control" placeholder="https://..." value="{{ product.primary_image|default:'' }}" required>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Original MRP Price (₹) *</label>
+                    <input type="number" step="0.01" name="price" class="form-control" placeholder="e.g. 29999" value="{{ product.price|default:'' }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Discount Price (₹)</label>
+                    <input type="number" step="0.01" name="discount_price" class="form-control" placeholder="Leave blank if none" value="{{ product.discount_price|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Available Stock *</label>
+                    <input type="number" name="stock" class="form-control" placeholder="e.g. 25" value="{{ product.stock|default:'10' }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Low-Stock Alert Threshold *</label>
+                    <input type="number" name="stock_threshold" class="form-control" placeholder="e.g. 5" value="{{ product.stock_threshold|default:'5' }}" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Short Description (Summary)</label>
+                <input type="text" name="short_description" class="form-control" placeholder="One-line summary for cards" value="{{ product.short_description|default:'' }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Full Detailed Description *</label>
+                <textarea name="description" rows="4" class="form-control" placeholder="Comprehensive product overview..." required>{{ product.description|default:'' }}</textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label small fw-bold">Specifications (JSON format)</label>
+                <textarea name="specifications" rows="3" class="form-control font-monospace" placeholder='{"Display": "6.7 inch", "Battery": "5000 mAh"}'>{% if product.specifications %}{{ product.specifications|safe }}{% else %}{}{% endif %}</textarea>
+                <small class="text-muted">Enter valid JSON key-value pairs (e.g. {"RAM": "8GB", "Warranty": "1 Year"}).</small>
+            </div>
+
+            <div class="d-flex flex-wrap gap-4 mb-4 p-3 rounded-3 border" style="background: var(--bg-subtle);">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="is_active" id="check_active" {% if not product or product.is_active %}checked{% endif %}>
+                    <label class="form-check-label small fw-bold" for="check_active">Active & Visible in Store</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="is_featured" id="check_featured" {% if product.is_featured %}checked{% endif %}>
+                    <label class="form-check-label small fw-bold" for="check_featured">Featured Product</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="is_bestseller" id="check_bestseller" {% if product.is_bestseller %}checked{% endif %}>
+                    <label class="form-check-label small fw-bold" for="check_bestseller">Bestseller Badge</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="is_flash_deal" id="check_flash" {% if product.is_flash_deal %}checked{% endif %}>
+                    <label class="form-check-label small fw-bold" for="check_flash">Flash Deal Spotlight</label>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn text-white fw-bold px-4 py-2" style="background: var(--orange-primary);">
+                    {% if product %}Update Product{% else %}Save & Publish Product{% endif %}
+                </button>
+                <a href="{% url 'portal:products' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% endblock %}

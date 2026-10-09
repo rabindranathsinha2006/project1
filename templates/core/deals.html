@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Deals & Offers | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Deals & Offers</li>
+        </ol>
+    </nav>
+
+    <!-- Header Banner -->
+    <div class="p-4 p-md-5 rounded-4 mb-5 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #0b132b 0%, #ff6b00 100%);">
+        <span class="badge bg-warning text-dark px-3 py-2 fw-bold mb-3"><i class="bi bi-fire"></i> Mega Savings Festival</span>
+        <h1 class="display-5 fw-black mb-2">Exclusive Deals & Promo Codes</h1>
+        <p class="fs-6 opacity-90 mb-0">Save big on flagship tech, premium fashion, home appliances, and more. All discounts calculated from real catalog prices.</p>
+    </div>
+
+    <!-- Active Coupons Grid -->
+    {% if active_coupons %}
+    <div class="mb-5">
+        <h3 class="fw-bold mb-3"><i class="bi bi-ticket-perforated-fill text-warning me-2"></i> Active Discount Vouchers</h3>
+        <div class="row g-3">
+            {% for c in active_coupons %}
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-2 border-warning shadow-sm rounded-4 p-4 h-100 position-relative" style="background: var(--bg-card); border-style: dashed !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-warning text-dark fw-bold fs-6">{{ c.code }}</span>
+                        <span class="text-success small fw-bold">Active</span>
+                    </div>
+                    <h4 class="fw-bold text-orange mb-1">
+                        {{ c.discount_value }}{% if c.discount_type == 'percentage' %}% OFF{% else %}₹ Instant Discount{% endif %}
+                    </h4>
+                    <p class="small text-muted mb-3">Min. cart amount: ₹{{ c.min_purchase }} • Valid until {{ c.valid_to|date:"d M Y" }}</p>
+                    
+                    <button class="btn btn-sm btn-outline-dark fw-bold w-100" onclick="navigator.clipboard.writeText('{{ c.code }}'); showToast('Coupon {{ c.code }} copied to clipboard!', 'success');">
+                        <i class="bi bi-clipboard-check me-1"></i> Copy Code
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Flash Deals Grid -->
+    <div class="mb-5">
+        <h3 class="fw-bold mb-3"><i class="bi bi-lightning-charge-fill text-danger me-2"></i> Discounted Catalog Items</h3>
+        <div class="row g-3">
+            {% for product in flash_deals %}
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <div class="product-card h-100">
+                    <div class="product-image-container">
+                        {% if product.discount_percent > 0 %}
+                        <span class="card-badge card-badge-discount">-{{ product.discount_percent }}% OFF</span>
+                        {% endif %}
+                        <div class="card-action-overlay">
+                            <button class="card-action-btn ajax-toggle-wishlist" data-url="{% url 'products:toggle_wishlist' product.id %}" title="Wishlist">
+                                <i class="bi bi-heart"></i>
+                            </button>
+                            <button class="card-action-btn ajax-toggle-compare" data-url="{% url 'products:toggle_compare' product.id %}" title="Compare">
+                                <i class="bi bi-arrow-left-right"></i>
+                            </button>
+                        </div>
+                        <a href="{% url 'products:detail' product.slug %}">
+                            <img src="{{ product.primary_image }}" alt="{{ product.name }}" loading="lazy">
+                        </a>
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-brand">{{ product.brand }}</div>
+                        <a href="{% url 'products:detail' product.slug %}" class="product-title">{{ product.name }}</a>
+                        <div class="product-rating">
+                            <span class="stars-solid"><i class="bi bi-star-fill"></i> {{ product.average_rating }}</span>
+                            <span class="text-muted">({{ product.review_count }})</span>
+                        </div>
+                        <div class="product-price-row">
+                            <span class="current-price">₹{{ product.effective_price }}</span>
+                            {% if product.discount_price and product.discount_price < product.price %}
+                            <span class="original-price">₹{{ product.price }}</span>
+                            {% endif %}
+                        </div>
+                        <button class="btn-card-add ajax-add-cart" data-url="{% url 'cart:add' product.id %}">
+                            <i class="bi bi-cart-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmed #{{ order.order_number }} | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-5">
+
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden mx-auto" style="max-width: 850px; background: var(--bg-card);">
+        
+        <!-- Celebration Header -->
+        <div class="text-center p-5 text-white" style="background: linear-gradient(135deg, #0b132b 0%, var(--orange-primary) 100%);">
+            <div class="rounded-circle bg-white text-success d-inline-flex align-items-center justify-content-center mb-3 shadow" style="width: 75px; height: 75px; font-size: 2.2rem;">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            <h2 class="fw-bold mb-1">Thank You for Your Order!</h2>
+            <p class="mb-0 opacity-90">Your order has been placed and is currently being processed by our fulfillment team.</p>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            
+            <!-- Key Order Specs -->
+            <div class="row g-3 mb-4 p-3 rounded-3" style="background: var(--bg-subtle);">
+                <div class="col-sm-3 col-6">
+                    <span class="text-muted small d-block">Order Number:</span>
+                    <strong class="text-primary fs-6">{{ order.order_number }}</strong>
+                </div>
+                <div class="col-sm-3 col-6">
+                    <span class="text-muted small d-block">Order Date:</span>
+                    <strong>{{ order.created_at|date:"d M Y, h:i A" }}</strong>
+                </div>
+                <div class="col-sm-3 col-6">
+                    <span class="text-muted small d-block">Payment Method:</span>
+                    <span class="badge bg-dark">{{ order.get_payment_method_display }}</span>
+                </div>
+                <div class="col-sm-3 col-6">
+                    <span class="text-muted small d-block">Est. Delivery:</span>
+                    <strong class="text-success"><i class="bi bi-truck me-1"></i>{{ order.estimated_delivery_date|date:"D, d M Y"|default:"3-5 Days" }}</strong>
+                </div>
+            </div>
+
+            {% if order.points_earned > 0 %}
+            <div class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2 mb-4">
+                <i class="bi bi-gem fs-5 text-warning"></i>
+                <div><strong>Congratulations!</strong> You earned <strong>{{ order.points_earned }} reward points</strong> on this order. Points have been credited to your loyalty balance.</div>
+            </div>
+            {% endif %}
+
+            <!-- Shipping & Customer Summary -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <h6 class="fw-bold border-bottom pb-2">Delivery Address</h6>
+                    <p class="text-secondary small mb-1"><strong>{{ order.shipping_full_name }}</strong></p>
+                    <p class="text-secondary small mb-1">{{ order.shipping_address }}</p>
+                    <p class="text-secondary small mb-1">{{ order.shipping_city }}, {{ order.shipping_state }} - {{ order.shipping_postal_code }}</p>
+                    <p class="text-secondary small mb-0"><i class="bi bi-telephone me-1"></i> {{ order.shipping_phone }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold border-bottom pb-2">Logistics Tracking</h6>
+                    <p class="text-secondary small mb-1">Tracking ID: <strong>{{ order.tracking_number }}</strong></p>
+                    <p class="text-secondary small mb-1">Status: <span class="badge bg-info text-dark">{{ order.get_status_display }}</span></p>
+                    <p class="text-secondary small mb-0">Delivery Courier: BlueDart / Express Express Logistics</p>
+                </div>
+            </div>
+
+            <!-- Items Purchased Table -->
+            <h6 class="fw-bold mb-3">Ordered Items ({{ items.count }})</h6>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered mb-0 align-middle">
+                    <thead style="background: var(--bg-subtle);">
+                        <tr class="small text-muted">
+                            <th>Product</th>
+                            <th class="text-center">Price</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ item.product_image }}" alt="{{ item.product_name }}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 8px;">
+                                    <span class="fw-bold small">{{ item.product_name }}</span>
+                                </div>
+                            </td>
+                            <td class="text-center small">₹{{ item.price }}</td>
+                            <td class="text-center small">{{ item.quantity }}</td>
+                            <td class="text-end fw-bold small text-orange">₹{{ item.total_price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Total Breakdown -->
+            <div class="row justify-content-end mb-4">
+                <div class="col-md-5">
+                    <div class="d-flex flex-column gap-1 small text-muted">
+                        <div class="d-flex justify-content-between">
+                            <span>Subtotal:</span>
+                            <span class="text-dark fw-bold">₹{{ order.subtotal }}</span>
+                        </div>
+                        {% if order.coupon_discount > 0 %}
+                        <div class="d-flex justify-content-between text-success fw-bold">
+                            <span>Coupon Discount ({{ order.coupon_code }}):</span>
+                            <span>-₹{{ order.coupon_discount }}</span>
+                        </div>
+                        {% endif %}
+                        {% if order.loyalty_discount > 0 %}
+                        <div class="d-flex justify-content-between text-success fw-bold">
+                            <span>Rewards Redeemed ({{ order.points_redeemed }} pts):</span>
+                            <span>-₹{{ order.loyalty_discount }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="d-flex justify-content-between">
+                            <span>Shipping Cost:</span>
+                            <span>{% if order.shipping_cost == 0 %}FREE{% else %}₹{{ order.shipping_cost }}{% endif %}</span>
+                        </div>
+                        <div class="d-flex justify-content-between pt-2 border-top text-dark fw-bold fs-5">
+                            <span>Total Paid:</span>
+                            <span class="text-orange">₹{{ order.total_amount }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+                <a href="{% url 'orders:tracking' order.order_number %}" class="btn text-white fw-bold px-4" style="background: var(--navy-primary);">
+                    <i class="bi bi-geo-alt-fill me-1"></i> Track Order Live
+                </a>
+                <button onclick="window.print()" class="btn btn-outline-secondary fw-bold px-4">
+                    <i class="bi bi-printer me-1"></i> Print Invoice
+                </button>
+                <a href="{% url 'products:list' %}" class="btn btn-link text-decoration-none ms-auto">
+                    Continue Shopping →
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

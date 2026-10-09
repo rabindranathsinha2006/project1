@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Rewards & Points | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">My Account</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Loyalty Rewards</li>
+        </ol>
+    </nav>
+
+    <!-- Points Balance Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 text-white text-center" style="background: linear-gradient(135deg, #0b132b 0%, var(--orange-primary) 100%);">
+        <i class="bi bi-gem display-3 text-warning mb-2"></i>
+        <h2 class="display-4 fw-black mb-1">{{ profile.loyalty_points }}</h2>
+        <h5 class="fw-bold opacity-90 mb-2">Ultimate Loyalty Points Available</h5>
+        <p class="small opacity-75 mb-0">Worth ₹{{ profile.loyalty_points }} in instant checkout discounts (1 point = ₹1)</p>
+    </div>
+
+    <!-- How It Works Cards -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-4">
+            <div class="card border shadow-sm rounded-3 p-3 h-100" style="background: var(--bg-card);">
+                <div class="fw-bold mb-1 text-primary"><i class="bi bi-cart-check-fill me-1"></i> Earn on Every Purchase</div>
+                <small class="text-muted">Earn 1 loyalty reward point for every ₹10 spent on confirmed orders.</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border shadow-sm rounded-3 p-3 h-100" style="background: var(--bg-card);">
+                <div class="fw-bold mb-1 text-success"><i class="bi bi-cash-stack me-1"></i> 1 Pt = ₹1 Redemption</div>
+                <small class="text-muted">Redeem up to 20% of your order total instantly with a single toggle at checkout.</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border shadow-sm rounded-3 p-3 h-100" style="background: var(--bg-card);">
+                <div class="fw-bold mb-1 text-warning"><i class="bi bi-gift-fill me-1"></i> Bonus Surprises</div>
+                <small class="text-muted">Receive promotional point boosts on seasonal festivals and birthdays.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History Table -->
+    <div class="card border shadow-sm rounded-4 overflow-hidden mb-4" style="background: var(--bg-card);">
+        <div class="card-header bg-transparent border-bottom p-4">
+            <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-orange me-2"></i> Loyalty Points Ledger</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if transactions %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background: var(--bg-subtle);">
+                        <tr class="small text-muted text-uppercase">
+                            <th class="p-3">Date</th>
+                            <th class="p-3">Description</th>
+                            <th class="p-3 text-end">Points Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in transactions %}
+                        <tr>
+                            <td class="p-3 small text-muted">{{ t.created_at|date:"d M Y, h:i A" }}</td>
+                            <td class="p-3 fw-bold">{{ t.description }}</td>
+                            <td class="p-3 text-end fw-black fs-6 {% if t.points >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if t.points >= 0 %}+{% endif %}{{ t.points }} Pts
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <p class="mb-0">No points transactions recorded yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

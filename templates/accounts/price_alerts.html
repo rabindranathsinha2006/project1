@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Price Drop Alerts | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">My Account</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Price Alerts</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-graph-down-arrow text-warning me-2"></i> Price Drop Alerts</h2>
+            <p class="text-muted small mb-0">We actively track database prices and notify you when an item reaches your target.</p>
+        </div>
+        <span class="badge bg-secondary fs-6">{{ alerts.count }} Alerts</span>
+    </div>
+
+    {% if alerts %}
+    <div class="row g-4">
+        {% for a in alerts %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border shadow-sm rounded-4 p-4 h-100 position-relative" style="background: var(--bg-card);">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <img src="{{ a.product.primary_image }}" alt="{{ a.product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px;">
+                    <div class="flex-grow-1 text-truncate">
+                        <div class="text-muted small text-uppercase">{{ a.product.brand }}</div>
+                        <h6 class="fw-bold mb-0 text-truncate"><a href="{% url 'products:detail' a.product.slug %}">{{ a.product.name }}</a></h6>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-3 mb-3" style="background: var(--bg-subtle);">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Current Price:</span>
+                        <strong class="text-dark">₹{{ a.product.effective_price }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span>Your Target Price:</span>
+                        <strong class="text-orange fs-6">₹{{ a.target_price }}</strong>
+                    </div>
+                    {% if a.product.effective_price <= a.target_price %}
+                    <div class="badge bg-success-subtle text-success w-100 py-2 mt-2">
+                        <i class="bi bi-check-circle-fill me-1"></i> Target Price Reached! Buy Now
+                    </div>
+                    {% else %}
+                    <div class="badge bg-warning-subtle text-dark w-100 py-1 mt-2 small">
+                        <i class="bi bi-hourglass-split me-1"></i> Tracking price drops
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <a href="{% url 'products:detail' a.product.slug %}" class="btn btn-sm btn-dark" style="background: var(--navy-primary);">
+                        View Product
+                    </a>
+                    <form action="{% url 'accounts:price_alert_delete' a.id %}" method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove Alert">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 p-4 rounded-4 border" style="background: var(--bg-card);">
+        <i class="bi bi-bell-slash text-muted display-1 mb-3"></i>
+        <h4 class="fw-bold">No Active Price Alerts</h4>
+        <p class="text-muted">You haven't set any price alerts yet. Click "Price Drop Alert" on any product detail page.</p>
+        <a href="{% url 'products:list' %}" class="btn text-white fw-bold px-4 py-2 mt-2" style="background: var(--orange-primary);">
+            Explore Catalog
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

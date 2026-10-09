@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Address | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">My Account</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:addresses' %}">Addresses</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit Address</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border shadow-sm rounded-4 p-4 p-md-5" style="background: var(--bg-card);">
+                <h4 class="fw-bold mb-4"><i class="bi bi-pencil-square text-orange me-2"></i> Edit Address</h4>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Full Name *</label>
+                            {{ form.full_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Mobile Number *</label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Street Address *</label>
+                            {{ form.street_address }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Apartment / Suite</label>
+                            {{ form.apartment_suite }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">City *</label>
+                            {{ form.city }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">State *</label>
+                            {{ form.state }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Postal / PIN Code *</label>
+                            {{ form.postal_code }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Address Type</label>
+                            {{ form.address_type }}
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                {{ form.is_default }}
+                                <label class="form-check-label small" for="id_is_default">Default shipping address</label>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex gap-2 mt-4">
+                            <button type="submit" class="btn text-white fw-bold px-4" style="background: var(--orange-primary);">Update Address</button>
+                            <a href="{% url 'accounts:addresses' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

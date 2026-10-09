@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}THE ULTIMATE SHOPPING — Discover Next-Gen E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container-custom">
+
+    <!-- 1. Hero Section Banner -->
+    <div class="hero-slider-wrap">
+        <div class="hero-content">
+            <div class="hero-pill-badge">
+                <i class="bi bi-stars"></i> THE ULTIMATE SHOPPING EXPERIENCE
+            </div>
+            <h1 class="hero-title">
+                Elevate Your Style. <br>
+                <span class="text-orange">Empower Your World.</span>
+            </h1>
+            <p class="hero-subtitle">
+                Discover curated flagship electronics, luxury fashion, and smart living essentials with genuine warranty, verified reviews, and instant delivery.
+            </p>
+            <div class="hero-btn-group">
+                <a href="{% url 'products:list' %}" class="btn-hero-orange text-decoration-none">
+                    <i class="bi bi-bag-fill"></i> Shop Now
+                </a>
+                <a href="{% url 'assistant:page' %}" class="btn-hero-outline text-decoration-none">
+                    <i class="bi bi-robot"></i> Ask AI Assistant
+                </a>
+                <a href="{% url 'core:deals' %}" class="btn-hero-outline text-decoration-none">
+                    <i class="bi bi-fire text-warning"></i> Today's Deals
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Trust Badges & Features -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-3 col-6">
+            <div class="feature-box">
+                <div class="feature-icon-wrap">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">Express Delivery</h6>
+                    <small class="text-muted">Fast & insured dispatch</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="feature-box">
+                <div class="feature-icon-wrap">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">100% Genuine</h6>
+                    <small class="text-muted">Authenticity guaranteed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="feature-box">
+                <div class="feature-icon-wrap">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">7-Day Easy Return</h6>
+                    <small class="text-muted">Hassle-free refunds</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="feature-box">
+                <div class="feature-icon-wrap">
+                    <i class="bi bi-gem"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">Reward Points</h6>
+                    <small class="text-muted">Earn points on every buy</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Featured Categories -->
+    <div class="mb-5">
+        <div class="section-header-wrap">
+            <h2 class="section-title">
+                <i class="bi bi-grid-fill text-orange"></i> Shop by Category
+            </h2>
+            <a href="{% url 'products:list' %}" class="section-view-all">View All <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="row g-3">
+            {% for cat in featured_categories %}
+            <div class="col-lg-2 col-md-4 col-6">
+                <a href="{% url 'products:category' cat.slug %}" class="category-card text-decoration-none">
+                    <div class="category-icon-circle">
+                        <i class="bi {{ cat.icon }}"></i>
+                    </div>
+                    <div class="category-name">{{ cat.name }}</div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 4. Flash Deals Section (with Real Countdown Timer) -->
+    {% if flash_deals %}
+    <div class="mb-5 p-4 rounded-4" style="background: linear-gradient(135deg, #111827 0%, #1e293b 100%); color: #fff;">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 border-bottom border-secondary pb-3">
+            <div>
+                <span class="badge bg-danger mb-2 text-uppercase fw-bold"><i class="bi bi-lightning-fill"></i> Flash Deals</span>
+                <h2 class="fs-3 fw-bold mb-0">Limited-Time Special Offers</h2>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small">Offer Ends In:</span>
+                <div class="deal-countdown countdown-container" data-end="{{ flash_deals.0.flash_deal_end|date:'c'|default:'2026-12-31T23:59:59' }}">
+                    <span class="countdown-box cd-days">02</span>d :
+                    <span class="countdown-box cd-hours">14</span>h :
+                    <span class="countdown-box cd-mins">45</span>m :
+                    <span class="countdown-box cd-secs">30</span>s
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            {% for product in flash_deals|slice:":4" %}
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <div class="product-card h-100">
+                    <div class="product-image-container">
+                        {% if product.discount_percent > 0 %}
+                        <span class="card-badge card-badge-deal">-{{ product.discount_percent }}% OFF</span>
+                        {% endif %}
+                        <div class="card-action-overlay">
+                            <button class="card-action-btn ajax-toggle-wishlist" data-url="{% url 'products:toggle_wishlist' product.id %}" title="Wishlist">
+                                <i class="bi bi-heart"></i>
+                            </button>
+                            <button class="card-action-btn ajax-toggle-compare" data-url="{% url 'products:toggle_compare' product.id %}" title="Compare">
+                                <i class="bi bi-arrow-left-right"></i>
+                            </button>
+                        </div>
+                        <a href="{% url 'products:detail' product.slug %}">
+                            <img src="{{ product.primary_image }}" alt="{{ product.name }}" loading="lazy">
+                        </a>
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-brand">{{ product.brand }}</div>
+                        <a href="{% url 'products:detail' product.slug %}" class="product-title">{{ product.name }}</a>
+                        <div class="product-rating">
+                            <span class="stars-solid"><i class="bi bi-star-fill"></i> {{ product.average_rating }}</span>
+                            <span class="text-muted">({{ product.review_count }})</span>
+                        </div>
+                        <div class="product-price-row">
+                            <span class="current-price">₹{{ product.effective_price }}</span>
+                            {% if product.discount_price and product.discount_price < product.price %}
+                            <span class="original-price">₹{{ product.price }}</span>
+                            {% endif %}
+                        </div>
+                        <button class="btn-card-add ajax-add-cart" data-url="{% url 'cart:add' product.id %}">
+                            <i class="bi bi-cart-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 5. Active Coupons Banner -->
+    {% if active_coupons %}
+    <div class="row g-3 mb-5">
+        {% for c in active_coupons %}
+        <div class="col-md-4">
+            <div class="p-3 rounded-3 border d-flex align-items-center justify-content-between" style="background: var(--bg-card); border-left: 5px solid var(--orange-primary) !important;">
+                <div>
+                    <span class="badge bg-warning text-dark fw-bold mb-1">{{ c.code }}</span>
+                    <div class="fw-bold">{{ c.discount_value }}{% if c.discount_type == 'percentage' %}% OFF{% else %}₹ OFF{% endif %}</div>
+                    <small class="text-muted">Min. spend: ₹{{ c.min_purchase }}</small>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ c.code }}'); showToast('Coupon code copied!', 'success');">
+                    <i class="bi bi-copy me-1"></i> Copy
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 6. Trending Products -->
+    <div class="mb-5">
+        <div class="section-header-wrap">
+            <h2 class="section-title">
+                <i class="bi bi-fire text-danger"></i> Trending Right Now
+            </h2>
+            <a href="{% url 'products:list' %}?sort=popularity" class="section-view-all">Explore Trending <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="row g-3">
+            {% for product in trending_products|slice:":4" %}
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <div class="product-card h-100">
+                    <div class="product-image-container">
+                        {% if product.discount_percent > 0 %}
+                        <span class="card-badge card-badge-discount">-{{ product.discount_percent }}%</span>
+                        {% endif %}
+                        <div class="card-action-overlay">
+                            <button class="card-action-btn ajax-toggle-wishlist" data-url="{% url 'products:toggle_wishlist' product.id %}" title="Wishlist">
+                                <i class="bi bi-heart"></i>
+                            </button>
+                            <button class="card-action-btn ajax-toggle-compare" data-url="{% url 'products:toggle_compare' product.id %}" title="Compare">
+                                <i class="bi bi-arrow-left-right"></i>
+                            </button>
+                        </div>
+                        <a href="{% url 'products:detail' product.slug %}">
+                            <img src="{{ product.primary_image }}" alt="{{ product.name }}" loading="lazy">
+                        </a>
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-brand">{{ product.brand }}</div>
+                        <a href="{% url 'products:detail' product.slug %}" class="product-title">{{ product.name }}</a>
+                        <div class="product-rating">
+                            <span class="stars-solid"><i class="bi bi-star-fill"></i> {{ product.average_rating }}</span>
+                            <span class="text-muted">({{ product.review_count }})</span>
+                        </div>
+                        <div class="product-price-row">
+                            <span class="current-price">₹{{ product.effective_price }}</span>
+                            {% if product.discount_price and product.discount_price < product.price %}
+                            <span class="original-price">₹{{ product.price }}</span>
+                            {% endif %}
+                        </div>
+                        <button class="btn-card-add ajax-add-cart" data-url="{% url 'cart:add' product.id %}">
+                            <i class="bi bi-cart-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 7. AI Shopping Assistant Promotion Spotlight -->
+    <div class="p-4 p-md-5 rounded-4 mb-5 shadow-sm" style="background: linear-gradient(135deg, #0b132b 0%, #1e293b 100%); color: #fff;">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <span class="badge bg-warning text-dark px-3 py-2 fw-bold mb-3"><i class="bi bi-stars"></i> Smart Shopping AI</span>
+                <h2 class="display-6 fw-bold mb-3">Can't decide what to buy? Let AI assist you.</h2>
+                <p class="text-secondary fs-6 mb-4">
+                    Ask our intelligent assistant e.g. <em>"Find the best smartphone under ₹15,000"</em> or <em>"Suggest running shoes with high ratings"</em>. It instantly analyzes genuine catalog specs, pricing, and buyer reviews to pick the perfect fit.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'assistant:page' %}" class="btn btn-warning fw-bold px-4 py-2">
+                        <i class="bi bi-robot me-1"></i> Launch AI Assistant
+                    </a>
+                    <button class="btn btn-outline-light px-4 py-2" onclick="document.getElementById('ai-launcher-btn').click();">
+                        <i class="bi bi-chat-dots me-1"></i> Quick Chat
+                    </button>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="p-4 rounded-4 shadow" style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15);">
+                    <i class="bi bi-cpu-fill text-orange display-1 mb-3"></i>
+                    <h5 class="fw-bold">Real Catalog Matching</h5>
+                    <p class="small text-muted mb-0">Powered by active database inventory and price checks.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Bestsellers & Top Rated -->
+    <div class="mb-5">
+        <div class="section-header-wrap">
+            <h2 class="section-title">
+                <i class="bi bi-trophy-fill text-warning"></i> Customer Bestsellers
+            </h2>
+            <a href="{% url 'products:list' %}?sort=popularity" class="section-view-all">See All Bestsellers <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="row g-3">
+            {% for product in bestsellers|slice:":4" %}
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <div class="product-card h-100">
+                    <div class="product-image-container">
+                        <span class="card-badge card-badge-bestseller"><i class="bi bi-award-fill"></i> Bestseller</span>
+                        <div class="card-action-overlay">
+                            <button class="card-action-btn ajax-toggle-wishlist" data-url="{% url 'products:toggle_wishlist' product.id %}" title="Wishlist">
+                                <i class="bi bi-heart"></i>
+                            </button>
+                            <button class="card-action-btn ajax-toggle-compare" data-url="{% url 'products:toggle_compare' product.id %}" title="Compare">
+                                <i class="bi bi-arrow-left-right"></i>
+                            </button>
+                        </div>
+                        <a href="{% url 'products:detail' product.slug %}">
+                            <img src="{{ product.primary_image }}" alt="{{ product.name }}" loading="lazy">
+                        </a>
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-brand">{{ product.brand }}</div>
+                        <a href="{% url 'products:detail' product.slug %}" class="product-title">{{ product.name }}</a>
+                        <div class="product-rating">
+                            <span class="stars-solid"><i class="bi bi-star-fill"></i> {{ product.average_rating }}</span>
+                            <span class="text-muted">({{ product.review_count }})</span>
+                        </div>
+                        <div class="product-price-row">
+                            <span class="current-price">₹{{ product.effective_price }}</span>
+                            {% if product.discount_price and product.discount_price < product.price %}
+                            <span class="original-price">₹{{ product.price }}</span>
+                            {% endif %}
+                        </div>
+                        <button class="btn-card-add ajax-add-cart" data-url="{% url 'cart:add' product.id %}">
+                            <i class="bi bi-cart-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 9. Recently Viewed Products (if any) -->
+    {% if recently_viewed %}
+    <div class="mb-5">
+        <div class="section-header-wrap">
+            <h2 class="section-title">
+                <i class="bi bi-clock-history text-info"></i> Recently Viewed
+            </h2>
+        </div>
+        <div class="row g-3">
+            {% for product in recently_viewed|slice:":4" %}
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <div class="product-card h-100">
+                    <div class="product-image-container">
+                        <a href="{% url 'products:detail' product.slug %}">
+                            <img src="{{ product.primary_image }}" alt="{{ product.name }}" loading="lazy">
+                        </a>
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-brand">{{ product.brand }}</div>
+                        <a href="{% url 'products:detail' product.slug %}" class="product-title">{{ product.name }}</a>
+                        <div class="product-price-row">
+                            <span class="current-price">₹{{ product.effective_price }}</span>
+                        </div>
+                        <button class="btn-card-add ajax-add-cart" data-url="{% url 'cart:add' product.id %}">
+                            <i class="bi bi-cart-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

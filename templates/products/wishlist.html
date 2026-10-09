@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Wishlist | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">My Wishlist</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0"><i class="bi bi-heart-fill text-danger me-2"></i> My Saved Wishlist</h2>
+        <span class="badge bg-secondary fs-6">{{ products|length }} Items</span>
+    </div>
+
+    {% if products %}
+    <div class="row g-3">
+        {% for product in products %}
+        <div class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="product-card h-100">
+                <div class="product-image-container">
+                    {% if product.discount_percent > 0 %}
+                    <span class="card-badge card-badge-discount">-{{ product.discount_percent }}% OFF</span>
+                    {% endif %}
+                    <div class="card-action-overlay">
+                        <a href="{% url 'products:toggle_wishlist' product.id %}" class="card-action-btn active text-danger" title="Remove from wishlist">
+                            <i class="bi bi-trash-fill"></i>
+                        </a>
+                    </div>
+                    <a href="{% url 'products:detail' product.slug %}">
+                        <img src="{{ product.primary_image }}" alt="{{ product.name }}" loading="lazy">
+                    </a>
+                </div>
+                <div class="product-card-body">
+                    <div class="product-brand">{{ product.brand }}</div>
+                    <a href="{% url 'products:detail' product.slug %}" class="product-title">{{ product.name }}</a>
+                    <div class="product-rating">
+                        <span class="stars-solid"><i class="bi bi-star-fill"></i> {{ product.average_rating }}</span>
+                        <span class="text-muted">({{ product.review_count }})</span>
+                    </div>
+                    <div class="product-price-row">
+                        <span class="current-price">₹{{ product.effective_price }}</span>
+                        {% if product.discount_price and product.discount_price < product.price %}
+                        <span class="original-price">₹{{ product.price }}</span>
+                        {% endif %}
+                    </div>
+
+                    {% if product.is_in_stock %}
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'cart:add' product.id %}" class="btn btn-sm btn-dark flex-grow-1 ajax-add-cart" style="background: var(--navy-primary);" data-url="{% url 'cart:add' product.id %}">
+                            <i class="bi bi-cart-plus"></i> Move to Cart
+                        </a>
+                    </div>
+                    {% else %}
+                    <span class="badge bg-secondary py-2 text-center">Out of Stock</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 p-4 rounded-4 border" style="background: var(--bg-card);">
+        <i class="bi bi-heart text-muted display-1 mb-3"></i>
+        <h4 class="fw-bold">Your Wishlist is Empty</h4>
+        <p class="text-muted">Save your favorite products to keep an eye on discounts and special offers.</p>
+        <a href="{% url 'products:list' %}" class="btn text-white fw-bold px-4 py-2 mt-2" style="background: var(--orange-primary);">
+            Explore Catalog
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

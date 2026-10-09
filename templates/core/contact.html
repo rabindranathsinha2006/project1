@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact & Support | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Contact Us</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4 mb-5">
+        
+        <!-- Left Column: Support Form -->
+        <div class="col-lg-7">
+            <div class="card border shadow-sm rounded-4 p-4 p-md-5" style="background: var(--bg-card);">
+                <span class="badge bg-warning text-dark px-3 py-2 fw-bold mb-2 align-self-start"><i class="bi bi-headset"></i> We're Here to Help</span>
+                <h3 class="fw-bold mb-2">Get in Touch with Our Team</h3>
+                <p class="text-muted small mb-4">Have an inquiry regarding an order, payment, or partnership? Send us a message and our support specialists will respond within 24 hours.</p>
+
+                <form method="POST" action="{% url 'core:contact' %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Your Name *</label>
+                            <input type="text" name="name" class="form-control" placeholder="John Doe" value="{{ user.get_full_name|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Your Email *</label>
+                            <input type="email" name="email" class="form-control" placeholder="name@example.com" value="{{ user.email|default:'' }}" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Subject *</label>
+                            <input type="text" name="subject" class="form-control" placeholder="e.g. Inquiry regarding Order Delivery" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Message Details *</label>
+                            <textarea name="message" rows="5" class="form-control" placeholder="Please describe your question or issue in detail..." required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn text-white fw-bold px-4 py-2" style="background: var(--orange-primary);">
+                                <i class="bi bi-send-fill me-1"></i> Send Message
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Column: Support Info & Direct Contacts -->
+        <div class="col-lg-5">
+            <div class="d-flex flex-column gap-3">
+                <div class="card border shadow-sm rounded-4 p-4" style="background: var(--bg-card);">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="rounded-circle bg-orange text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                            <i class="bi bi-telephone-inbound-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0">Customer Care Hotline</h6>
+                            <span class="text-muted small">Toll-free 24/7 assistance</span>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold text-primary mb-0">+91 1800 200 8899</h5>
+                </div>
+
+                <div class="card border shadow-sm rounded-4 p-4" style="background: var(--bg-card);">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                            <i class="bi bi-envelope-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0">Email Support</h6>
+                            <span class="text-muted small">Average response time &lt; 2 hrs</span>
+                        </div>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-0">support@ultimateshopping.com</h6>
+                </div>
+
+                <div class="card border shadow-sm rounded-4 p-4" style="background: var(--bg-card);">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0">Corporate Headquarters</h6>
+                            <span class="text-muted small">Flagship Technology Center</span>
+                        </div>
+                    </div>
+                    <p class="text-secondary small mb-0">
+                        THE ULTIMATE SHOPPING Tower, Cyber City, MG Road, Bengaluru, Karnataka 560001, India.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Frequently Asked Questions (FAQ) Accordion -->
+    <div class="card border shadow-sm rounded-4 p-4 p-md-5 mb-5" style="background: var(--bg-card);">
+        <h3 class="fw-bold mb-4 text-center"><i class="bi bi-question-circle-fill text-orange me-2"></i> Frequently Asked Questions</h3>
+        
+        <div class="accordion accordion-flush" id="faqAccordion">
+            <div class="accordion-item" style="background: transparent;">
+                <h2 class="accordion-header" id="faq1">
+                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                        How does the AI Shopping Assistant work?
+                    </button>
+                </h2>
+                <div id="collapse1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-secondary small">
+                        Our AI assistant parses natural language requests (such as price ceilings, e.g. "under ₹15,000", product categories, and specs), matches them directly with current database stock, and presents verified product cards ready to add to your cart.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" style="background: transparent;">
+                <h2 class="accordion-header" id="faq2">
+                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                        How are loyalty reward points calculated and redeemed?
+                    </button>
+                </h2>
+                <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-secondary small">
+                        You earn 1 loyalty point for every ₹10 spent on confirmed orders. Each point is worth ₹1 off your total at checkout (up to 20% of your cart value). You also receive 100 bonus points upon registration!
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" style="background: transparent;">
+                <h2 class="accordion-header" id="faq3">
+                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                        What is your return and cancellation policy?
+                    </button>
+                </h2>
+                <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-secondary small">
+                        Orders can be cancelled directly by clicking "Cancel Order" on your Order Tracking page while in Placed or Confirmed status. We also provide a 7-day hassle-free replacement warranty for damaged or defective items.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shopping Cart | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Shopping Cart</li>
+        </ol>
+    </nav>
+
+    <h2 class="fw-bold mb-4"><i class="bi bi-cart3 text-orange me-2"></i> Your Shopping Cart ({{ cart.total_items }} Items)</h2>
+
+    {% if items %}
+    <div class="row g-4">
+        
+        <!-- Cart Items List -->
+        <div class="col-lg-8">
+            <div class="card border shadow-sm rounded-4 overflow-hidden mb-4" style="background: var(--bg-card);">
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle mb-0">
+                        <thead class="border-bottom" style="background: var(--bg-subtle);">
+                            <tr class="text-muted small text-uppercase">
+                                <th class="p-3">Product</th>
+                                <th class="text-center p-3">Price</th>
+                                <th class="text-center p-3">Quantity</th>
+                                <th class="text-end p-3">Total</th>
+                                <th class="p-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr class="border-bottom">
+                                <!-- Product Info -->
+                                <td class="p-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ item.product.primary_image }}" alt="{{ item.product.name }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 10px;">
+                                        <div>
+                                            <div class="text-muted small text-uppercase">{{ item.product.brand }}</div>
+                                            <h6 class="fw-bold mb-1"><a href="{% url 'products:detail' item.product.slug %}">{{ item.product.name }}</a></h6>
+                                            {% if item.product.stock < 5 %}
+                                            <span class="badge bg-warning text-dark small">Only {{ item.product.stock }} left in stock</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Unit Price -->
+                                <td class="text-center p-3 fw-bold">
+                                    ₹{{ item.product.effective_price }}
+                                </td>
+
+                                <!-- Quantity Controls -->
+                                <td class="text-center p-3">
+                                    <div class="d-inline-flex align-items-center border rounded-3 p-1" style="background: var(--bg-subtle);">
+                                        <form action="{% url 'cart:update' item.id %}" method="POST" class="d-inline m-0">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="decrease">
+                                            <button type="submit" class="btn btn-sm btn-link text-dark p-0 px-2 text-decoration-none fw-bold" aria-label="Decrease quantity">−</button>
+                                        </form>
+                                        
+                                        <span class="px-2 fw-bold">{{ item.quantity }}</span>
+
+                                        <form action="{% url 'cart:update' item.id %}" method="POST" class="d-inline m-0">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="increase">
+                                            <button type="submit" class="btn btn-sm btn-link text-dark p-0 px-2 text-decoration-none fw-bold" {% if item.quantity >= item.product.stock %}disabled{% endif %} aria-label="Increase quantity">+</button>
+                                        </form>
+                                    </div>
+                                </td>
+
+                                <!-- Line Total -->
+                                <td class="text-end p-3 fw-bold text-orange fs-6">
+                                    ₹{{ item.line_total }}
+                                </td>
+
+                                <!-- Remove Button -->
+                                <td class="text-center p-3">
+                                    <form action="{% url 'cart:remove' item.id %}" method="POST" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm text-danger border-0 bg-transparent" title="Remove Item">
+                                            <i class="bi bi-trash3-fill fs-5"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{% url 'products:list' %}" class="btn btn-outline-secondary btn-sm fw-bold">
+                    <i class="bi bi-arrow-left me-1"></i> Continue Shopping
+                </a>
+            </div>
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <div class="col-lg-4">
+            <div class="p-4 rounded-4 border shadow-sm" style="background: var(--bg-card);">
+                <h5 class="fw-bold mb-3 pb-2 border-bottom">Order Summary</h5>
+
+                <!-- Coupon Input Form -->
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Promo Code or Gift Voucher</label>
+                    {% if cart.coupon %}
+                    <div class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-2 small">
+                        <div>
+                            <strong><i class="bi bi-check-circle-fill me-1"></i> {{ cart.coupon.code }}</strong>
+                            <div class="text-muted">Applied successfully</div>
+                        </div>
+                        <a href="{% url 'cart:remove_coupon' %}" class="btn btn-sm btn-outline-danger py-0 px-2">Remove</a>
+                    </div>
+                    {% else %}
+                    <form action="{% url 'cart:apply_coupon' %}" method="POST" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="text" name="coupon_code" class="form-control form-control-sm text-uppercase" placeholder="e.g. SUPER20" required>
+                        <button type="submit" class="btn btn-sm text-white fw-bold px-3" style="background: var(--navy-primary);">Apply</button>
+                    </form>
+                    <small class="text-muted d-block mt-1">Try <strong>SUPER20</strong> or <strong>WELCOME100</strong></small>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <!-- Calculations Breakdown -->
+                <div class="d-flex flex-column gap-2 mb-3 small">
+                    <div class="d-flex justify-content-between text-muted">
+                        <span>Items Subtotal:</span>
+                        <span class="text-dark fw-bold">₹{{ cart.subtotal }}</span>
+                    </div>
+
+                    {% if cart.discount_amount > 0 %}
+                    <div class="d-flex justify-content-between text-success fw-bold">
+                        <span>Coupon Discount:</span>
+                        <span>-₹{{ cart.discount_amount }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between text-muted">
+                        <span>Estimated Shipping:</span>
+                        {% if cart.shipping_cost == 0 %}
+                        <span class="badge bg-success-subtle text-success">FREE</span>
+                        {% else %}
+                        <span class="text-dark fw-bold">₹{{ cart.shipping_cost }}</span>
+                        {% endif %}
+                    </div>
+                    {% if cart.subtotal < 999 and cart.subtotal > 0 %}
+                    <div class="text-primary small" style="font-size: 0.78rem;">
+                        <i class="bi bi-info-circle me-1"></i> Add ₹{{ 999|add:cart.subtotal|default:0 }} more for <strong>FREE Delivery</strong>!
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-baseline pt-3 border-top mb-4">
+                    <span class="fs-5 fw-bold">Total Amount:</span>
+                    <span class="fs-3 fw-black text-orange">₹{{ cart.final_total }}</span>
+                </div>
+
+                <a href="{% url 'orders:checkout' %}" class="btn w-100 py-3 text-white fw-bold d-flex align-items-center justify-content-center gap-2 rounded-3 shadow" style="background: var(--orange-primary);">
+                    Proceed to Checkout <i class="bi bi-arrow-right"></i>
+                </a>
+
+                <div class="text-center mt-3 text-muted small">
+                    <i class="bi bi-shield-lock-fill text-success me-1"></i> Guaranteed Safe & Secure Checkout
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Recommended Add-ons -->
+    {% if recommended_products %}
+    <div class="mt-5">
+        <h4 class="fw-bold mb-3"><i class="bi bi-stars text-orange me-1"></i> You May Also Like</h4>
+        <div class="row g-3">
+            {% for prod in recommended_products %}
+            <div class="col-xl-3 col-lg-4 col-sm-6">
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <a href="{% url 'products:detail' prod.slug %}">
+                            <img src="{{ prod.primary_image }}" alt="{{ prod.name }}" loading="lazy">
+                        </a>
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-brand">{{ prod.brand }}</div>
+                        <a href="{% url 'products:detail' prod.slug %}" class="product-title">{{ prod.name }}</a>
+                        <div class="product-price-row">
+                            <span class="current-price">₹{{ prod.effective_price }}</span>
+                        </div>
+                        <button class="btn-card-add ajax-add-cart" data-url="{% url 'cart:add' prod.id %}">
+                            <i class="bi bi-cart-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty Cart State -->
+    <div class="text-center py-5 p-4 rounded-4 border" style="background: var(--bg-card);">
+        <i class="bi bi-cart-x text-muted display-1 mb-3"></i>
+        <h3 class="fw-bold">Your Cart is Empty</h3>
+        <p class="text-muted">Looks like you haven't added anything to your cart yet.</p>
+        <div class="d-flex justify-content-center gap-2 mt-3">
+            <a href="{% url 'products:list' %}" class="btn text-white fw-bold px-4 py-2" style="background: var(--orange-primary);">
+                Explore All Products
+            </a>
+            <a href="{% url 'core:deals' %}" class="btn btn-outline-dark fw-bold px-4 py-2">
+                Check Today's Deals
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

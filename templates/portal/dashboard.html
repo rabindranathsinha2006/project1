@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Admin Nav Tabs -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 text-white" style="background: linear-gradient(135deg, #0b132b 0%, #1e293b 100%);">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-shield-lock-fill text-warning fs-3"></i>
+                <div>
+                    <h4 class="fw-bold mb-0">Management Portal</h4>
+                    <small class="text-secondary">THE ULTIMATE SHOPPING Administration Console</small>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'portal:dashboard' %}" class="btn btn-sm btn-warning text-dark fw-bold">Dashboard</a>
+                <a href="{% url 'portal:products' %}" class="btn btn-sm btn-outline-light">Products</a>
+                <a href="{% url 'portal:inventory' %}" class="btn btn-sm btn-outline-light position-relative">
+                    Inventory
+                    {% if low_stock_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                        {{ low_stock_count }}
+                    </span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'portal:orders' %}" class="btn btn-sm btn-outline-light">Orders</a>
+                <a href="{% url 'portal:analytics' %}" class="btn btn-sm btn-outline-light">Analytics</a>
+                <a href="{% url 'portal:coupons' %}" class="btn btn-sm btn-outline-light">Coupons</a>
+                <a href="{% url 'portal:reviews' %}" class="btn btn-sm btn-outline-light">Reviews</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 Key Metrics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-sm-6">
+            <div class="card border shadow-sm rounded-4 p-3 h-100" style="background: var(--bg-card);">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-bold text-uppercase">Total Revenue</span>
+                    <div class="rounded-circle bg-success text-white p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="bi bi-currency-rupee fs-5"></i>
+                    </div>
+                </div>
+                <h3 class="fw-black text-dark mb-0">₹{{ total_sales }}</h3>
+                <small class="text-success fw-bold"><i class="bi bi-graph-up-arrow me-1"></i> Real catalog orders</small>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6">
+            <div class="card border shadow-sm rounded-4 p-3 h-100" style="background: var(--bg-card);">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-bold text-uppercase">Total Orders</span>
+                    <div class="rounded-circle bg-primary text-white p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="bi bi-box-seam fs-5"></i>
+                    </div>
+                </div>
+                <h3 class="fw-black text-dark mb-0">{{ total_orders }}</h3>
+                <small class="text-muted">Avg: ₹{{ avg_order_value }} / order</small>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6">
+            <div class="card border shadow-sm rounded-4 p-3 h-100" style="background: var(--bg-card);">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-bold text-uppercase">Active Customers</span>
+                    <div class="rounded-circle bg-info text-white p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="bi bi-people fs-5"></i>
+                    </div>
+                </div>
+                <h3 class="fw-black text-dark mb-0">{{ total_customers }}</h3>
+                <small class="text-muted">Registered shoppers</small>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6">
+            <div class="card border shadow-sm rounded-4 p-3 h-100" style="background: var(--bg-card);">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-bold text-uppercase">Stock Warnings</span>
+                    <div class="rounded-circle bg-danger text-white p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="bi bi-exclamation-triangle fs-5"></i>
+                    </div>
+                </div>
+                <h3 class="fw-black {% if low_stock_count > 0 %}text-danger{% else %}text-dark{% endif %} mb-0">{{ low_stock_count }}</h3>
+                <small class="text-muted">Products at/below threshold</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders & Fast Actions -->
+    <div class="row g-4 mb-4">
+        
+        <!-- Recent Orders Table -->
+        <div class="col-lg-8">
+            <div class="card border shadow-sm rounded-4 overflow-hidden h-100" style="background: var(--bg-card);">
+                <div class="card-header bg-transparent border-bottom p-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-orange me-2"></i> Recent Customer Orders</h5>
+                    <a href="{% url 'portal:orders' %}" class="small text-orange fw-bold text-decoration-none">View All Orders →</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead style="background: var(--bg-subtle);">
+                                <tr class="small text-muted text-uppercase">
+                                    <th class="p-3">Order Number</th>
+                                    <th class="p-3">Customer</th>
+                                    <th class="p-3">Amount</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ord in recent_orders %}
+                                <tr>
+                                    <td class="p-3 fw-bold"><a href="{% url 'portal:order_detail' ord.order_number %}">#{{ ord.order_number }}</a></td>
+                                    <td class="p-3 small">{{ ord.shipping_full_name }}</td>
+                                    <td class="p-3 fw-bold text-orange">₹{{ ord.total_amount }}</td>
+                                    <td class="p-3">
+                                        <span class="badge {% if ord.status == 'delivered' %}bg-success{% elif ord.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                            {{ ord.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="p-3 text-end">
+                                        <a href="{% url 'portal:order_detail' ord.order_number %}" class="btn btn-sm btn-outline-dark">
+                                            Manage
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No orders placed yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Top Products -->
+        <div class="col-lg-4">
+            <!-- Fast Shortcuts -->
+            <div class="card border shadow-sm rounded-4 p-3 mb-4" style="background: var(--bg-card);">
+                <h6 class="fw-bold mb-3 border-bottom pb-2">Quick Admin Actions</h6>
+                <div class="d-flex flex-column gap-2">
+                    <a href="{% url 'portal:product_create' %}" class="btn btn-sm text-white fw-bold d-flex align-items-center justify-content-between p-2" style="background: var(--orange-primary);">
+                        <span><i class="bi bi-plus-circle me-1"></i> Add New Product</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <a href="{% url 'portal:inventory' %}?low_only=1" class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-between p-2">
+                        <span><i class="bi bi-box-arrow-in-down me-1"></i> Restock Low Inventory</span>
+                        <span class="badge bg-danger">{{ low_stock_count }}</span>
+                    </a>
+                    <a href="{% url 'portal:coupons' %}" class="btn btn-sm btn-outline-dark d-flex align-items-center justify-content-between p-2">
+                        <span><i class="bi bi-tag me-1"></i> Manage Promo Coupons</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Best Sellers Mini List -->
+            <div class="card border shadow-sm rounded-4 p-3" style="background: var(--bg-card);">
+                <h6 class="fw-bold mb-3 border-bottom pb-2">Bestselling Products</h6>
+                <div class="d-flex flex-column gap-2">
+                    {% for p in best_sellers %}
+                    <div class="d-flex align-items-center gap-2 small">
+                        <img src="{{ p.primary_image }}" alt="{{ p.name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
+                        <div class="flex-grow-1 text-truncate">
+                            <strong class="d-block text-truncate"><a href="{% url 'portal:product_edit' p.id %}">{{ p.name }}</a></strong>
+                            <span class="text-orange fw-bold">₹{{ p.effective_price }}</span>
+                        </div>
+                        <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> {{ p.average_rating }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

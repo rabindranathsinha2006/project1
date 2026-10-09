@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'cart:detail' %}">Cart</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+        </ol>
+    </nav>
+
+    <h2 class="fw-bold mb-4"><i class="bi bi-shield-check text-success me-2"></i> Secure Checkout</h2>
+
+    <form action="{% url 'orders:place_order' %}" method="POST" id="checkout-form">
+        {% csrf_token %}
+
+        <div class="row g-4">
+            
+            <!-- Left Column: Shipping & Payment -->
+            <div class="col-lg-8">
+                
+                <!-- 1. Delivery Address Card -->
+                <div class="card border shadow-sm rounded-4 mb-4" style="background: var(--bg-card);">
+                    <div class="card-header bg-transparent border-bottom py-3">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-geo-alt-fill text-orange me-2"></i> 1. Delivery Shipping Address</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        {% if addresses %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Select Delivery Destination:</label>
+                            <div class="d-flex flex-column gap-2 mb-3">
+                                {% for addr in addresses %}
+                                <div class="form-check p-3 rounded-3 border address-select-item" style="background: var(--bg-subtle);">
+                                    <input class="form-check-input" type="radio" name="address_id" id="addr_{{ addr.id }}" value="{{ addr.id }}" {% if addr == default_address %}checked{% endif %} onchange="toggleNewAddressForm(false)">
+                                    <label class="form-check-label w-100" for="addr_{{ addr.id }}">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>{{ addr.full_name }}</strong>
+                                            <span class="badge bg-secondary">{{ addr.address_type }}</span>
+                                        </div>
+                                        <div class="text-secondary small mt-1">{{ addr.street_address }}{% if addr.apartment_suite %}, {{ addr.apartment_suite }}{% endif %}, {{ addr.city }}, {{ addr.state }} - {{ addr.postal_code }}</div>
+                                        <div class="text-muted small mt-1"><i class="bi bi-telephone me-1"></i> {{ addr.phone }}</div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+
+                                <div class="form-check p-3 rounded-3 border" style="background: var(--bg-subtle);">
+                                    <input class="form-check-input" type="radio" name="address_id" id="addr_new" value="new" onchange="toggleNewAddressForm(true)">
+                                    <label class="form-check-label fw-bold" for="addr_new">
+                                        <i class="bi bi-plus-circle me-1 text-orange"></i> Ship to a Different / New Address
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <input type="hidden" name="address_id" value="new">
+                        {% endif %}
+
+                        <!-- New Address Form Fields -->
+                        <div id="new-address-section" class="{% if addresses %}d-none{% endif %} border-top pt-3">
+                            <h6 class="fw-bold mb-3">Enter New Delivery Address:</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Full Name *</label>
+                                    <input type="text" name="full_name" class="form-control" placeholder="Recipient's Name" value="{{ user.get_full_name|default:'' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">10-Digit Mobile Number *</label>
+                                    <input type="tel" name="phone" class="form-control" placeholder="e.g. 9876543210" value="{{ profile.phone|default:'' }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold">Street Address / House No. *</label>
+                                    <input type="text" name="street_address" class="form-control" placeholder="Flat, House no., Building, Street">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Apartment / Suite / Landmark (Optional)</label>
+                                    <input type="text" name="apartment_suite" class="form-control" placeholder="Near Apollo Pharmacy">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">City *</label>
+                                    <input type="text" name="city" class="form-control" placeholder="e.g. Bengaluru">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">State *</label>
+                                    <input type="text" name="state" class="form-control" placeholder="e.g. Karnataka">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">PIN Code *</label>
+                                    <input type="text" name="postal_code" class="form-control" placeholder="6-digit PIN code" maxlength="6">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 2. Loyalty Rewards Redemption -->
+                {% if profile.loyalty_points > 0 and max_redeemable_points > 0 %}
+                <div class="card border shadow-sm rounded-4 mb-4" style="background: var(--bg-card);">
+                    <div class="card-header bg-transparent border-bottom py-3">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-gem text-warning me-2"></i> 2. Ultimate Loyalty Rewards</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div>
+                                <span class="badge bg-warning text-dark fs-6">{{ profile.loyalty_points }} Available Points</span>
+                                <small class="text-muted d-block mt-1">1 Point = ₹1 Instant Checkout Discount (Up to 20% order limit)</small>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" role="switch" name="redeem_loyalty" value="1" id="redeem-switch" onchange="toggleLoyaltyInput(this)">
+                            <label class="form-check-label fw-bold" for="redeem-switch">Redeem Points for Instant Discount</label>
+                        </div>
+
+                        <div id="loyalty-input-wrap" class="d-none mt-3">
+                            <label class="form-label small fw-bold text-muted">Points to Redeem (Max: {{ max_redeemable_points }} pts = ₹{{ max_redeemable_points }}):</label>
+                            <input type="number" name="points_to_redeem" id="points-input" class="form-control form-control-sm w-50" min="1" max="{{ max_redeemable_points }}" value="{{ max_redeemable_points }}">
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 3. Payment Method Card -->
+                <div class="card border shadow-sm rounded-4 mb-4" style="background: var(--bg-card);">
+                    <div class="card-header bg-transparent border-bottom py-3">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-credit-card-2-front-fill text-primary me-2"></i> 3. Select Payment Method</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column gap-3">
+                            
+                            <!-- Cash on Delivery -->
+                            <div class="form-check p-3 rounded-3 border" style="background: var(--bg-subtle);">
+                                <input class="form-check-input" type="radio" name="payment_method" id="pay_cod" value="cod" checked>
+                                <label class="form-check-label w-100" for="pay_cod">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong><i class="bi bi-cash-stack text-success me-2"></i> Cash on Delivery (COD)</strong>
+                                        <span class="badge bg-success-subtle text-success">Pay upon delivery</span>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Pay with cash or UPI QR code directly to the courier agent when your package arrives.</small>
+                                </label>
+                            </div>
+
+                            <!-- Simulated Online Payment -->
+                            <div class="form-check p-3 rounded-3 border" style="background: var(--bg-subtle);">
+                                <input class="form-check-input" type="radio" name="payment_method" id="pay_online" value="online">
+                                <label class="form-check-label w-100" for="pay_online">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong><i class="bi bi-credit-card text-primary me-2"></i> Simulated Online Payment</strong>
+                                        <span class="badge bg-info text-dark">Demo Payment Gateway</span>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Supports instant simulated checkout via Credit/Debit Cards, UPI, or NetBanking with zero real charges.</small>
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Order Review Summary -->
+            <div class="col-lg-4">
+                <div class="p-4 rounded-4 border shadow-sm sticky-top" style="top: 90px; background: var(--bg-card);">
+                    <h5 class="fw-bold mb-3 pb-2 border-bottom">Order Review ({{ cart.total_items }})</h5>
+
+                    <!-- Mini Cart List -->
+                    <div class="d-flex flex-column gap-2 mb-3 overflow-auto" style="max-height: 250px;">
+                        {% for item in items %}
+                        <div class="d-flex align-items-center gap-2 py-1 border-bottom">
+                            <img src="{{ item.product.primary_image }}" alt="{{ item.product.name }}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 8px;">
+                            <div class="flex-grow-1 text-truncate" style="min-width: 0;">
+                                <div class="small fw-bold text-truncate">{{ item.product.name }}</div>
+                                <div class="small text-muted">{{ item.quantity }} × ₹{{ item.product.effective_price }}</div>
+                            </div>
+                            <div class="small fw-bold text-nowrap">₹{{ item.line_total }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Price Calculations -->
+                    <div class="d-flex flex-column gap-2 small text-muted mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Subtotal:</span>
+                            <span class="text-dark fw-bold">₹{{ cart.subtotal }}</span>
+                        </div>
+                        {% if cart.discount_amount > 0 %}
+                        <div class="d-flex justify-content-between text-success fw-bold">
+                            <span>Coupon ({{ cart.coupon.code }}):</span>
+                            <span>-₹{{ cart.discount_amount }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="d-flex justify-content-between">
+                            <span>Shipping:</span>
+                            {% if cart.shipping_cost == 0 %}
+                            <span class="text-success fw-bold">FREE</span>
+                            {% else %}
+                            <span class="text-dark fw-bold">₹{{ cart.shipping_cost }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-baseline pt-3 border-top mb-4">
+                        <span class="fs-5 fw-bold">Total to Pay:</span>
+                        <span class="fs-3 fw-black text-orange" id="final-total-display">₹{{ cart.final_total }}</span>
+                    </div>
+
+                    <button type="submit" class="btn w-100 py-3 text-white fw-bold d-flex align-items-center justify-content-center gap-2 rounded-3 shadow" style="background: var(--orange-primary);" id="btn-place-order">
+                        <i class="bi bi-lock-fill"></i> Confirm & Place Order
+                    </button>
+
+                    <div class="text-center mt-3 text-muted small" style="font-size: 0.75rem;">
+                        By clicking "Confirm & Place Order", you agree to our <a href="{% url 'core:terms' %}" target="_blank">Terms of Service</a>. Inventory is deducted automatically.
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+function toggleNewAddressForm(show) {
+    const section = document.getElementById('new-address-section');
+    if (section) {
+        if (show) {
+            section.classList.remove('d-none');
+        } else {
+            section.classList.add('d-none');
+        }
+    }
+}
+
+function toggleLoyaltyInput(checkbox) {
+    const wrap = document.getElementById('loyalty-input-wrap');
+    if (wrap) {
+        if (checkbox.checked) {
+            wrap.classList.remove('d-none');
+        } else {
+            wrap.classList.add('d-none');
+        }
+    }
+}
+</script>
+{% endblock %}

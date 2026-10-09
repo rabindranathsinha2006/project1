@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Products | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Admin Nav Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-box-seam-fill text-orange me-2"></i> Catalog Products Management</h2>
+            <p class="text-muted small mb-0">Total {{ products.count }} products registered in database</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'portal:dashboard' %}" class="btn btn-outline-secondary btn-sm">← Dashboard</a>
+            <a href="{% url 'portal:product_create' %}" class="btn btn-sm text-white fw-bold" style="background: var(--orange-primary);">
+                <i class="bi bi-plus-lg me-1"></i> Add New Product
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="card border shadow-sm rounded-4 p-3 mb-4" style="background: var(--bg-card);">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <input type="text" name="q" class="form-control form-control-sm" placeholder="Search by name, SKU, or brand..." value="{{ q }}">
+            </div>
+            <div class="col-md-4">
+                <select name="category" class="form-select form-select-sm">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if selected_cat == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-dark w-100 fw-bold">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Products Table -->
+    <div class="card border shadow-sm rounded-4 overflow-hidden mb-4" style="background: var(--bg-card);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: var(--bg-subtle);">
+                    <tr class="small text-muted text-uppercase">
+                        <th class="p-3">Product</th>
+                        <th class="p-3">Category</th>
+                        <th class="p-3">SKU</th>
+                        <th class="p-3">Price</th>
+                        <th class="p-3">Stock</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                    <tr>
+                        <td class="p-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="{{ p.primary_image }}" alt="{{ p.name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <div class="fw-bold small"><a href="{% url 'products:detail' p.slug %}" target="_blank">{{ p.name }}</a></div>
+                                    <small class="text-muted">{{ p.brand }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-3 small">{{ p.category.name }}</td>
+                        <td class="p-3 small text-muted font-monospace">{{ p.sku }}</td>
+                        <td class="p-3">
+                            <span class="fw-bold text-orange">₹{{ p.effective_price }}</span>
+                            {% if p.discount_price and p.discount_price < p.price %}
+                            <small class="text-muted d-block text-decoration-line-through">₹{{ p.price }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="p-3">
+                            {% if p.stock > p.stock_threshold %}
+                            <span class="badge bg-success-subtle text-success">{{ p.stock }} units</span>
+                            {% elif p.stock > 0 %}
+                            <span class="badge bg-warning-subtle text-danger">{{ p.stock }} units (Low)</span>
+                            {% else %}
+                            <span class="badge bg-danger">0 (Out of stock)</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-3">
+                            {% if p.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-3 text-end">
+                            <a href="{% url 'portal:product_edit' p.id %}" class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{% url 'portal:product_delete' p.id %}" method="POST" class="d-inline" onsubmit="return confirm('Delete this product permanently?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">No products found matching criteria.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Privacy Policy | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-5">
+    <div class="card border shadow-sm rounded-4 p-4 p-md-5 mx-auto" style="max-width: 900px; background: var(--bg-card);">
+        <h1 class="fw-black mb-3">Privacy Policy</h1>
+        <p class="text-muted small mb-4">Last Updated: October 2026</p>
+
+        <div class="d-flex flex-column gap-3 text-secondary lh-lg">
+            <h5 class="fw-bold text-dark mb-1">1. Information We Collect</h5>
+            <p>At <strong>THE ULTIMATE SHOPPING</strong>, we collect personal details necessary to process and fulfill your online orders. This includes your name, shipping address, mobile phone number, email address, and order transaction records.</p>
+
+            <h5 class="fw-bold text-dark mb-1">2. Payment Security & Integrity</h5>
+            <p>We respect customer financial security. We do not store raw credit card numbers or banking passwords. All online payments are handled securely through encrypted payment gateways.</p>
+
+            <h5 class="fw-bold text-dark mb-1">3. Use of Cookies and Sessions</h5>
+            <p>Our platform uses session cookies to remember items in your shopping cart, preserve your theme preference (Dark Mode or Light Mode), and maintain secure authenticated access to your account.</p>
+
+            <h5 class="fw-bold text-dark mb-1">4. Disclosure to Logistics Partners</h5>
+            <p>We only share required shipping information (recipient name, address, and contact number) with authorized courier partners solely for the purpose of package delivery and tracking.</p>
+
+            <h5 class="fw-bold text-dark mb-1">5. Customer Rights & Data Protection</h5>
+            <p>You have full authority to view, modify, or delete your saved shipping addresses, price drop alerts, and personal profile information at any time from your Account Dashboard.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

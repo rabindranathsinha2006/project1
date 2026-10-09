@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track Order #{{ order.order_number }} | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'orders:my_orders' %}">My Orders</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Track #{{ order.order_number }}</li>
+        </ol>
+    </nav>
+
+    <div class="card border shadow-sm rounded-4 overflow-hidden mb-5" style="background: var(--bg-card);">
+        
+        <div class="card-header p-4 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2" style="background: var(--bg-subtle);">
+            <div>
+                <span class="text-muted small">Tracking Order</span>
+                <h4 class="fw-bold mb-0">#{{ order.order_number }}</h4>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %} fs-6 py-2 px-3">
+                    Status: {{ order.get_status_display }}
+                </span>
+                {% if order.is_cancellable %}
+                <button type="button" class="btn btn-outline-danger btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                    <i class="bi bi-x-circle me-1"></i> Cancel Order
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            
+            {% if order.status == 'cancelled' %}
+            <div class="alert alert-danger py-3 px-4 rounded-3 mb-4">
+                <h5 class="fw-bold"><i class="bi bi-x-octagon-fill me-2"></i> This Order Was Cancelled</h5>
+                <p class="mb-0 small">Reason: {{ order.cancellation_reason|default:"Cancelled upon customer request" }}. Any deducted stock or reward points have been automatically restored to your account.</p>
+            </div>
+            {% else %}
+            <!-- Visual Order Progress Tracker -->
+            <div class="order-tracker-timeline mb-5">
+                <!-- 1. Placed -->
+                <div class="tracker-step {% if order.status_step >= 1 %}completed{% endif %} {% if order.status_step == 1 %}active{% endif %}">
+                    <div class="tracker-node"><i class="bi bi-check-lg"></i></div>
+                    <div class="tracker-label">Order Placed</div>
+                </div>
+
+                <!-- 2. Confirmed -->
+                <div class="tracker-step {% if order.status_step >= 2 %}completed{% endif %} {% if order.status_step == 2 %}active{% endif %}">
+                    <div class="tracker-node"><i class="bi bi-patch-check"></i></div>
+                    <div class="tracker-label">Confirmed</div>
+                </div>
+
+                <!-- 3. Packed -->
+                <div class="tracker-step {% if order.status_step >= 3 %}completed{% endif %} {% if order.status_step == 3 %}active{% endif %}">
+                    <div class="tracker-node"><i class="bi bi-box-seam"></i></div>
+                    <div class="tracker-label">Packed</div>
+                </div>
+
+                <!-- 4. Shipped -->
+                <div class="tracker-step {% if order.status_step >= 4 %}completed{% endif %} {% if order.status_step == 4 %}active{% endif %}">
+                    <div class="tracker-node"><i class="bi bi-truck"></i></div>
+                    <div class="tracker-label">Shipped</div>
+                </div>
+
+                <!-- 5. Out for Delivery -->
+                <div class="tracker-step {% if order.status_step >= 5 %}completed{% endif %} {% if order.status_step == 5 %}active{% endif %}">
+                    <div class="tracker-node"><i class="bi bi-bicycle"></i></div>
+                    <div class="tracker-label">Out for Delivery</div>
+                </div>
+
+                <!-- 6. Delivered -->
+                <div class="tracker-step {% if order.status_step >= 6 %}completed{% endif %} {% if order.status_step == 6 %}active{% endif %}">
+                    <div class="tracker-node"><i class="bi bi-house-check"></i></div>
+                    <div class="tracker-label">Delivered</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="row g-4">
+                
+                <!-- Left: Detailed Tracking History Logs -->
+                <div class="col-lg-7">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-clock-history text-orange me-2"></i> Activity Timeline</h5>
+                    <div class="border rounded-3 p-3" style="background: var(--bg-subtle);">
+                        {% if logs %}
+                            <div class="d-flex flex-column gap-3">
+                                {% for log in logs %}
+                                <div class="d-flex gap-3 align-items-start border-bottom pb-2">
+                                    <div class="rounded-circle bg-orange text-white d-flex align-items-center justify-content-center flex-shrink-0 mt-1" style="width: 28px; height: 28px; font-size: 0.85rem;">
+                                        <i class="bi bi-check"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-baseline">
+                                            <strong class="fs-6">{{ log.title }}</strong>
+                                            <small class="text-muted">{{ log.timestamp|date:"d M Y, h:i A" }}</small>
+                                        </div>
+                                        <p class="small text-secondary mb-1">{{ log.description }}</p>
+                                        {% if log.location %}
+                                        <small class="text-muted"><i class="bi bi-geo-alt me-1"></i> {{ log.location }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted small mb-0">Order received. Package will be dispatched shortly.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Right: Delivery Details & Items -->
+                <div class="col-lg-5">
+                    <div class="border rounded-3 p-3 mb-3" style="background: var(--bg-subtle);">
+                        <h6 class="fw-bold mb-2">Courier Dispatch Details</h6>
+                        <div class="small text-secondary mb-1">Tracking ID: <strong>{{ order.tracking_number|default:"Pending assignment" }}</strong></div>
+                        <div class="small text-secondary mb-1">Courier: BlueDart Express Ground</div>
+                        <div class="small text-secondary mb-0">Destination: {{ order.shipping_city }}, {{ order.shipping_state }} ({{ order.shipping_postal_code }})</div>
+                    </div>
+
+                    <div class="border rounded-3 p-3" style="background: var(--bg-subtle);">
+                        <h6 class="fw-bold mb-3">Items in this Package</h6>
+                        <div class="d-flex flex-column gap-2">
+                            {% for item in items %}
+                            <div class="d-flex align-items-center gap-2 small">
+                                <img src="{{ item.product_image }}" alt="{{ item.product_name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
+                                <div class="flex-grow-1 text-truncate">
+                                    <div class="fw-bold text-truncate">{{ item.product_name }}</div>
+                                    <div class="text-muted">Qty: {{ item.quantity }} • ₹{{ item.price }}</div>
+                                </div>
+                                <div class="fw-bold text-orange">₹{{ item.total_price }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Cancel Order Modal -->
+{% if order.is_cancellable %}
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--bg-card); color: var(--text-primary);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-danger" id="cancelOrderModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i> Cancel Order #{{ order.order_number }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'orders:cancel' order.order_number %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Are you sure you want to cancel this order? Stock reserved for you will be released back to the catalog, and any used loyalty points will be refunded.</p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Reason for Cancellation</label>
+                        <select name="cancellation_reason" class="form-select small" required>
+                            <option value="Changed my mind">Changed my mind</option>
+                            <option value="Ordered by mistake">Ordered by mistake</option>
+                            <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                            <option value="Delivery time is too long">Delivery time is too long</option>
+                            <option value="Need to change shipping address">Need to change shipping address</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Keep Order</button>
+                    <button type="submit" class="btn btn-danger btn-sm fw-bold">Confirm Cancellation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

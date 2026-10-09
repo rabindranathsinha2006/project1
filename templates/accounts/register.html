@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card border shadow-lg rounded-4 overflow-hidden" style="background: var(--bg-card);">
+                
+                <div class="p-4 text-center border-bottom text-white" style="background: linear-gradient(135deg, #0b132b 0%, #1c2541 100%);">
+                    <div class="logo-icon-box mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-bag-check-fill"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Join THE ULTIMATE SHOPPING</h4>
+                    <p class="small text-secondary mb-0">Sign up in seconds and get 100 bonus reward points instantly!</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2 mb-4">
+                        <i class="bi bi-gift-fill fs-5 text-warning"></i>
+                        <div><strong>Sign-Up Reward:</strong> Get <strong>100 Loyalty Points</strong> credited upon registration to redeem on your first order!</div>
+                    </div>
+
+                    <form method="POST" action="{% url 'accounts:register' %}" id="register-form">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Full Name *</label>
+                            <input type="text" name="full_name" class="form-control" placeholder="e.g. John Doe" required>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Username *</label>
+                                <input type="text" name="username" class="form-control" placeholder="Choose a username" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Phone Number</label>
+                                <input type="tel" name="phone" class="form-control" placeholder="e.g. 9876543210">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Email Address *</label>
+                            <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Password *</label>
+                                <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Confirm Password *</label>
+                                <input type="password" name="confirm_password" class="form-control" placeholder="Re-type password" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn w-100 py-3 text-white fw-bold shadow-sm rounded-3" style="background: var(--orange-primary);">
+                            Create My Account
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4 text-muted small">
+                        Already have an account? <a href="{% url 'accounts:login' %}" class="fw-bold text-orange">Sign In Here</a>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

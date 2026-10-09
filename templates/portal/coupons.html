@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Coupons Management | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Admin Nav Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-tag-fill text-warning me-2"></i> Promotional Coupons Management</h2>
+            <p class="text-muted small mb-0">Create, configure discounts, and track usage limits</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'portal:dashboard' %}" class="btn btn-outline-secondary btn-sm">← Dashboard</a>
+            <button class="btn btn-sm text-white fw-bold" style="background: var(--orange-primary);" data-bs-toggle="modal" data-bs-target="#createCouponModal">
+                <i class="bi bi-plus-lg me-1"></i> Create Coupon
+            </button>
+        </div>
+    </div>
+
+    <!-- Coupons Table -->
+    <div class="card border shadow-sm rounded-4 overflow-hidden mb-4" style="background: var(--bg-card);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: var(--bg-subtle);">
+                    <tr class="small text-muted text-uppercase">
+                        <th class="p-3">Coupon Code</th>
+                        <th class="p-3">Discount</th>
+                        <th class="p-3">Min. Spend</th>
+                        <th class="p-3">Usage (Used / Limit)</th>
+                        <th class="p-3">Valid Until</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in coupons %}
+                    <tr>
+                        <td class="p-3 fw-bold font-monospace fs-6">{{ c.code }}</td>
+                        <td class="p-3 fw-bold text-orange">
+                            {{ c.discount_value }}{% if c.discount_type == 'percentage' %}% OFF{% else %}₹ OFF{% endif %}
+                            {% if c.max_discount %}<small class="text-muted d-block">(Max ₹{{ c.max_discount }})</small>{% endif %}
+                        </td>
+                        <td class="p-3 small">₹{{ c.min_purchase }}</td>
+                        <td class="p-3 small">{{ c.times_used }} / {{ c.usage_limit }}</td>
+                        <td class="p-3 small text-muted">{{ c.valid_to|date:"d M Y" }}</td>
+                        <td class="p-3">
+                            {% if c.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-3 text-end">
+                            <form action="{% url 'portal:coupon_toggle' c.id %}" method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm {% if c.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                                    {% if c.is_active %}Disable{% else %}Activate{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">No coupons created yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Create Coupon Modal -->
+<div class="modal fade" id="createCouponModal" tabindex="-1" aria-labelledby="createCouponModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--bg-card); color: var(--text-primary);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold" id="createCouponModalLabel"><i class="bi bi-tag-fill text-orange me-2"></i> Create Coupon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Coupon Code (Uppercase) *</label>
+                        <input type="text" name="code" class="form-control text-uppercase font-monospace" placeholder="e.g. FLASH50" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Discount Type *</label>
+                            <select name="discount_type" class="form-select">
+                                <option value="percentage">Percentage (%)</option>
+                                <option value="fixed">Fixed Amount (₹)</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Discount Value *</label>
+                            <input type="number" step="0.01" name="discount_value" class="form-control" placeholder="e.g. 20 or 500" required>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Min Cart Amount (₹)</label>
+                            <input type="number" step="0.01" name="min_purchase" class="form-control" value="0">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Max Discount Cap (₹)</label>
+                            <input type="number" step="0.01" name="max_discount" class="form-control" placeholder="Optional">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Usage Limit (Total uses)</label>
+                        <input type="number" name="usage_limit" class="form-control" value="100">
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn text-white fw-bold btn-sm" style="background: var(--orange-primary);">Save Coupon</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

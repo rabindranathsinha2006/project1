@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if current_category %}{{ current_category.name }} — {% elif search_query %}Search: "{{ search_query }}" — {% endif %}Products | THE ULTIMATE SHOPPING
+{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'products:list' %}">Products</a></li>
+            {% if current_category %}
+            <li class="breadcrumb-item active" aria-current="page">{{ current_category.name }}</li>
+            {% elif search_query %}
+            <li class="breadcrumb-item active" aria-current="page">Search: "{{ search_query }}"</li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">All Catalog</li>
+            {% endif %}
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        
+        <!-- Left Filter Sidebar -->
+        <div class="col-lg-3">
+            <div class="p-3 rounded-4 border shadow-sm sticky-top" style="top: 90px; background: var(--bg-card); z-index: 10;">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-funnel me-1 text-orange"></i> Filters</h5>
+                    <a href="{% url 'products:list' %}" class="small text-danger text-decoration-none">Reset All</a>
+                </div>
+
+                <form method="GET" action="{% url 'products:list' %}" id="filter-form">
+                    {% if search_query %}
+                    <input type="hidden" name="q" value="{{ search_query }}">
+                    {% endif %}
+                    {% if current_sort %}
+                    <input type="hidden" name="sort" value="{{ current_sort }}">
+                    {% endif %}
+
+                    <!-- Categories -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Category</label>
+                        <div class="d-flex flex-column gap-1">
+                            <a href="{% url 'products:list' %}" class="text-decoration-none small py-1 px-2 rounded {% if not current_category %}bg-orange text-white fw-bold{% else %}text-secondary{% endif %}">
+                                All Categories
+                            </a>
+                            {% for cat in categories %}
+                            <a href="{% url 'products:list' %}?category={{ cat.slug }}{% if search_query %}&q={{ search_query }}{% endif %}" class="text-decoration-none small py-1 px-2 rounded {% if current_category.slug == cat.slug %}bg-orange text-white fw-bold{% else %}text-secondary{% endif %}">
+                                {{ cat.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Price Range -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Price Range (₹)</label>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <input type="number" name="min_price" class="form-control form-control-sm" placeholder="Min" value="{{ min_price }}">
+                            <span class="text-muted">-</span>
+                            <input type="number" name="max_price" class="form-control form-control-sm" placeholder="Max" value="{{ max_price }}">
+                        </div>
+                    </div>
+
+                    <!-- Customer Rating -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Customer Rating</label>
+                        <div class="d-flex flex-column gap-1">
+                            <label class="form-check-label small d-flex align-items-center gap-2">
+                                <input type="radio" name="rating" value="4" class="form-check-input" {% if current_rating == '4' %}checked{% endif %}>
+                                <span class="text-warning"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i></span>
+                                <span>4★ & above</span>
+                            </label>
+                            <label class="form-check-label small d-flex align-items-center gap-2">
+                                <input type="radio" name="rating" value="3" class="form-check-input" {% if current_rating == '3' %}checked{% endif %}>
+                                <span class="text-warning"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i><i class="bi bi-star"></i></span>
+                                <span>3★ & above</span>
+                            </label>
+                            <label class="form-check-label small d-flex align-items-center gap-2">
+                                <input type="radio" name="rating" value="" class="form-check-input" {% if not current_rating %}checked{% endif %}>
+                                <span>Any Rating</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Brand Filter -->
+                    {% if brands %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Brand</label>
+                        <select name="brand" class="form-select form-select-sm">
+                            <option value="">All Brands</option>
+                            {% for b in brands %}
+                            <option value="{{ b }}" {% if selected_brand == b %}selected{% endif %}>{{ b }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <!-- In Stock Checkbox -->
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" name="in_stock" value="1" class="form-check-input" id="in-stock-check" {% if in_stock == '1' %}checked{% endif %}>
+                        <label class="form-check-label small fw-bold" for="in-stock-check">Exclude Out of Stock</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-sm w-100 text-white fw-bold py-2" style="background: var(--navy-primary);">
+                        Apply Filters
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Products Grid -->
+        <div class="col-lg-9">
+            
+            <!-- Top Toolbar -->
+            <div class="p-3 rounded-4 border shadow-sm mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3" style="background: var(--bg-card);">
+                <div>
+                    <h4 class="fw-bold mb-1">
+                        {% if current_category %}
+                            {{ current_category.name }}
+                        {% elif search_query %}
+                            Results for "{{ search_query }}"
+                        {% else %}
+                            All Products Catalog
+                        {% endif %}
+                    </h4>
+                    <span class="text-muted small">Showing {{ total_count }} products</span>
+                </div>
+
+                <!-- Sorting Dropdown -->
+                <div class="d-flex align-items-center gap-2">
+                    <label class="text-muted small text-nowrap">Sort By:</label>
+                    <select class="form-select form-select-sm" style="min-width: 170px;" onchange="location = this.value;">
+                        <option value="?{% if query_string %}{{ query_string }}&{% endif %}sort=newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest Arrivals</option>
+                        <option value="?{% if query_string %}{{ query_string }}&{% endif %}sort=price_low" {% if current_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="?{% if query_string %}{{ query_string }}&{% endif %}sort=price_high" {% if current_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                        <option value="?{% if query_string %}{{ query_string }}&{% endif %}sort=rating" {% if current_sort == 'rating' %}selected{% endif %}>Highest Rated</option>
+                        <option value="?{% if query_string %}{{ query_string }}&{% endif %}sort=popularity" {% if current_sort == 'popularity' %}selected{% endif %}>Most Popular / Bestseller</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Products List -->
+            {% if products %}
+            <div class="row g-3">
+                {% for product in products %}
+                <div class="col-xl-4 col-md-6">
+                    <div class="product-card">
+                        <div class="product-image-container">
+                            {% if product.discount_percent > 0 %}
+                            <span class="card-badge card-badge-discount">-{{ product.discount_percent }}% OFF</span>
+                            {% elif product.is_bestseller %}
+                            <span class="card-badge card-badge-bestseller">Bestseller</span>
+                            {% endif %}
+                            
+                            <div class="card-action-overlay">
+                                <button class="card-action-btn ajax-toggle-wishlist" data-url="{% url 'products:toggle_wishlist' product.id %}" title="Wishlist">
+                                    <i class="bi bi-heart"></i>
+                                </button>
+                                <button class="card-action-btn ajax-toggle-compare" data-url="{% url 'products:toggle_compare' product.id %}" title="Compare">
+                                    <i class="bi bi-arrow-left-right"></i>
+                                </button>
+                            </div>
+                            <a href="{% url 'products:detail' product.slug %}">
+                                <img src="{{ product.primary_image }}" alt="{{ product.name }}" loading="lazy">
+                            </a>
+                        </div>
+                        <div class="product-card-body">
+                            <div class="product-brand">{{ product.brand }}</div>
+                            <a href="{% url 'products:detail' product.slug %}" class="product-title">{{ product.name }}</a>
+                            <div class="product-rating">
+                                <span class="stars-solid"><i class="bi bi-star-fill"></i> {{ product.average_rating }}</span>
+                                <span class="text-muted">({{ product.review_count }})</span>
+                            </div>
+                            <div class="stock-indicator">
+                                {% if product.is_in_stock %}
+                                    {% if product.is_low_stock %}
+                                    <span class="stock-low"><i class="bi bi-exclamation-triangle"></i> Only {{ product.stock }} left!</span>
+                                    {% else %}
+                                    <span class="stock-in"><i class="bi bi-check-circle"></i> In Stock</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="stock-out"><i class="bi bi-x-circle"></i> Out of Stock</span>
+                                {% endif %}
+                            </div>
+                            <div class="product-price-row">
+                                <span class="current-price">₹{{ product.effective_price }}</span>
+                                {% if product.discount_price and product.discount_price < product.price %}
+                                <span class="original-price">₹{{ product.price }}</span>
+                                {% endif %}
+                            </div>
+                            {% if product.is_in_stock %}
+                            <button class="btn-card-add ajax-add-cart" data-url="{% url 'cart:add' product.id %}">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
+                            </button>
+                            {% else %}
+                            <a href="{% url 'products:detail' product.slug %}#restock-box" class="btn btn-sm btn-outline-secondary w-100 py-2">
+                                <i class="bi bi-bell"></i> Notify Me
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-5 d-flex justify-content-center">
+                <ul class="pagination shadow-sm">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link" style="background: var(--orange-primary); border-color: var(--orange-primary);">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5 p-4 rounded-4 border" style="background: var(--bg-card);">
+                <i class="bi bi-search text-muted display-1 mb-3"></i>
+                <h4 class="fw-bold">No Products Found</h4>
+                <p class="text-muted">We couldn't find any products matching your selected filters or search terms.</p>
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <a href="{% url 'products:list' %}" class="btn btn-dark" style="background: var(--navy-primary);">Clear All Filters</a>
+                    <a href="{% url 'assistant:page' %}" class="btn btn-warning fw-bold"><i class="bi bi-stars"></i> Ask AI Shopping Assistant</a>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

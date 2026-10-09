@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Order #{{ order.order_number }} | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'portal:dashboard' %}">Admin</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'portal:orders' %}">Orders</a></li>
+            <li class="breadcrumb-item active">#{{ order.order_number }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Order #{{ order.order_number }}</h2>
+            <span class="text-muted small">Placed on {{ order.created_at|date:"d M Y, h:i A" }} by {{ order.user.username }}</span>
+        </div>
+        <span class="badge {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %} fs-6 py-2 px-3">
+            Current Status: {{ order.get_status_display }}
+        </span>
+    </div>
+
+    <div class="row g-4 mb-4">
+        
+        <!-- Left: Status Updater & Tracking History -->
+        <div class="col-lg-6">
+            <!-- Update Status Form -->
+            <div class="card border shadow-sm rounded-4 p-4 mb-4" style="background: var(--bg-card);">
+                <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-pencil-square text-orange me-2"></i> Update Order Status</h5>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Select Next Order State</label>
+                        <select name="status" class="form-select" required>
+                            <option value="placed" {% if order.status == 'placed' %}selected{% endif %}>1. Order Placed</option>
+                            <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>2. Confirmed & Verified</option>
+                            <option value="packed" {% if order.status == 'packed' %}selected{% endif %}>3. Packed at Fulfillment Center</option>
+                            <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>4. Shipped / Dispatched</option>
+                            <option value="out_for_delivery" {% if order.status == 'out_for_delivery' %}selected{% endif %}>5. Out for Delivery</option>
+                            <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>6. Delivered</option>
+                            <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>✕ Cancelled</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Current Hub / Location</label>
+                        <input type="text" name="location" class="form-control" placeholder="e.g. Regional Hub, Bengaluru" value="Fulfillment Hub">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Tracking Note / Description (Customer Visible)</label>
+                        <input type="text" name="tracking_note" class="form-control" placeholder="e.g. Package arrived at local distribution center">
+                    </div>
+
+                    <button type="submit" class="btn text-white fw-bold px-4 py-2" style="background: var(--orange-primary);">
+                        Update Status & Notify
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tracking History Log -->
+            <div class="card border shadow-sm rounded-4 p-4" style="background: var(--bg-card);">
+                <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-clock-history text-primary me-2"></i> Tracking Logs ({{ tracking_logs.count }})</h5>
+                <div class="d-flex flex-column gap-3">
+                    {% for log in tracking_logs %}
+                    <div class="d-flex gap-2 border-bottom pb-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <div>
+                            <strong>{{ log.title }}</strong>
+                            <div class="small text-muted">{{ log.description }}</div>
+                            <small class="text-secondary">{{ log.timestamp|date:"d M Y, h:i A" }} {% if log.location %}• {{ log.location }}{% endif %}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Shipping, Payment, and Items Summary -->
+        <div class="col-lg-6">
+            <!-- Shipping Card -->
+            <div class="card border shadow-sm rounded-4 p-4 mb-4" style="background: var(--bg-card);">
+                <h6 class="fw-bold border-bottom pb-2">Customer & Shipping Information</h6>
+                <div class="row g-2 small text-secondary">
+                    <div class="col-sm-6">Recipient: <strong class="text-dark">{{ order.shipping_full_name }}</strong></div>
+                    <div class="col-sm-6">Mobile: <strong class="text-dark">{{ order.shipping_phone }}</strong></div>
+                    <div class="col-12">Address: <span class="text-dark">{{ order.shipping_address }}, {{ order.shipping_city }}, {{ order.shipping_state }} - {{ order.shipping_postal_code }}</span></div>
+                    <div class="col-sm-6">Payment Mode: <strong class="text-dark">{{ order.get_payment_method_display }}</strong></div>
+                    <div class="col-sm-6">Tracking ID: <strong class="text-dark">{{ order.tracking_number }}</strong></div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="card border shadow-sm rounded-4 overflow-hidden" style="background: var(--bg-card);">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h6 class="fw-bold mb-0">Items in Order ({{ items.count }})</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead style="background: var(--bg-subtle);">
+                            <tr class="small text-muted">
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr class="small">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ item.product_image }}" alt="{{ item.product_name }}" style="width: 38px; height: 38px; object-fit: cover; border-radius: 6px;">
+                                        <span class="fw-bold">{{ item.product_name }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td>₹{{ item.price }}</td>
+                                <td class="text-end fw-bold text-orange">₹{{ item.total_price }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="fw-bold border-top">
+                                <td colspan="3" class="text-end">Order Total:</td>
+                                <td class="text-end text-orange fs-6">₹{{ order.total_amount }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

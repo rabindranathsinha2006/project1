@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sales Analytics | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Admin Nav Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-graph-up-arrow text-success me-2"></i> Sales Analytics & Insights</h2>
+            <p class="text-muted small mb-0">Live revenue metrics, fulfillment rates, and top generating products</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'portal:dashboard' %}" class="btn btn-outline-secondary btn-sm">← Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Analytics Top Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card border shadow-sm rounded-4 p-4 text-center" style="background: var(--bg-card);">
+                <span class="text-muted small text-uppercase fw-bold">Gross Sales</span>
+                <h3 class="fw-black text-orange mt-2 mb-1">₹{{ total_sales }}</h3>
+                <small class="text-success"><i class="bi bi-arrow-up"></i> Realized order value</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border shadow-sm rounded-4 p-4 text-center" style="background: var(--bg-card);">
+                <span class="text-muted small text-uppercase fw-bold">Delivered Orders</span>
+                <h3 class="fw-black text-success mt-2 mb-1">{{ completed_orders }}</h3>
+                <small class="text-muted">Successfully fulfilled</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border shadow-sm rounded-4 p-4 text-center" style="background: var(--bg-card);">
+                <span class="text-muted small text-uppercase fw-bold">Cancelled Orders</span>
+                <h3 class="fw-black text-danger mt-2 mb-1">{{ cancelled_orders }}</h3>
+                <small class="text-muted">Stock reverted to catalog</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border shadow-sm rounded-4 p-4 text-center" style="background: var(--bg-card);">
+                <span class="text-muted small text-uppercase fw-bold">Average Order Value</span>
+                <h3 class="fw-black text-primary mt-2 mb-1">₹{{ avg_order_value }}</h3>
+                <small class="text-muted">AOV metric</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue by Product and Category -->
+    <div class="row g-4 mb-4">
+        
+        <!-- Top Revenue Generating Products -->
+        <div class="col-lg-7">
+            <div class="card border shadow-sm rounded-4 overflow-hidden h-100" style="background: var(--bg-card);">
+                <div class="card-header bg-transparent border-bottom p-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-trophy-fill text-warning me-2"></i> Top Revenue Generating Products</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead style="background: var(--bg-subtle);">
+                            <tr class="small text-muted text-uppercase">
+                                <th class="p-3">Product Name</th>
+                                <th class="p-3 text-center">Units Sold</th>
+                                <th class="p-3 text-end">Gross Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_items %}
+                            <tr>
+                                <td class="p-3 fw-bold small">{{ item.product_name }}</td>
+                                <td class="p-3 text-center">{{ item.qty_sold }}</td>
+                                <td class="p-3 text-end fw-black text-orange">₹{{ item.total_rev }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted">No sales items logged yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Distribution -->
+        <div class="col-lg-5">
+            <div class="card border shadow-sm rounded-4 p-4 h-100" style="background: var(--bg-card);">
+                <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-pie-chart-fill text-primary me-2"></i> Catalog Category Coverage</h5>
+                <div class="d-flex flex-column gap-3">
+                    {% for c in categories %}
+                    <div>
+                        <div class="d-flex justify-content-between small fw-bold mb-1">
+                            <span>{{ c.name }}</span>
+                            <span class="text-muted">{{ c.product_count }} Products</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-orange" style="width: {% widthratio c.product_count 14 100 %}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Shopping Assistant | THE ULTIMATE SHOPPING{% endblock %}
+
+{% block content %}
+<div class="container-custom py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">AI Shopping Assistant</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            
+            <div class="card border shadow-lg rounded-4 overflow-hidden" style="background: var(--bg-card); height: 750px; display: flex; flex-direction: column;">
+                
+                <!-- Chat Header -->
+                <div class="p-3 px-4 border-bottom text-white d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #0b132b 0%, #1c2541 100%);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-orange text-white d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 1.4rem;">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Ultimate Shopping AI Assistant</h5>
+                            <small class="text-secondary">Powered by real-time catalog parsing and database queries</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-success-subtle text-success border border-success"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Active</span>
+                </div>
+
+                <!-- Chat Body Messages -->
+                <div id="ai-page-messages" class="flex-grow-1 p-4 overflow-auto d-flex flex-column gap-3" style="background: var(--bg-body);">
+                    
+                    <!-- Welcome Bot Bubble -->
+                    <div class="ai-message ai-message-bot" style="max-width: 90%;">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-warning text-dark"><i class="bi bi-stars"></i> AI Concierge</span>
+                            <span class="text-muted small">Just now</span>
+                        </div>
+                        <p class="mb-2">Hello! I am your personal shopping advisor for <strong>THE ULTIMATE SHOPPING</strong>. I can query our genuine product database, filter by your exact budget, match technical specifications, and find the best-reviewed items for you.</p>
+                        
+                        <p class="mb-2 fw-bold small text-muted">Try clicking one of these questions or type your own below:</p>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-light border shadow-sm ai-suggestion-chip" data-query="Find the best smartphone under ₹15,000">
+                                📱 "Find the best smartphone under ₹15,000"
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light border shadow-sm ai-suggestion-chip" data-query="Best rated noise cancelling headphones">
+                                🎧 "Best rated noise cancelling headphones"
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light border shadow-sm ai-suggestion-chip" data-query="Show genuine leather bomber jackets">
+                                🧥 "Show genuine leather bomber jackets"
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light border shadow-sm ai-suggestion-chip" data-query="Best sellers in Home and Kitchen">
+                                ☕ "Best sellers in Home and Kitchen"
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Chat Input Footer -->
+                <div class="p-3 border-top" style="background: var(--bg-card);">
+                    <form id="ai-page-form" class="d-flex gap-2">
+                        <input type="text" id="ai-page-input" class="form-control form-control-lg fs-6" placeholder="Ask for recommendations, e.g. 'Find smartphones under ₹15,000'..." autocomplete="off" required>
+                        <button type="submit" class="btn text-white fw-bold px-4" style="background: var(--orange-primary);" aria-label="Send">
+                            <i class="bi bi-send-fill fs-5"></i>
+                        </button>
+                    </form>
+                    <div class="text-center mt-2 text-muted" style="font-size: 0.72rem;">
+                        Assistant analyzes live product prices, discounts, ratings, and stock status directly from THE ULTIMATE SHOPPING database.
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
